@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Velora">
+<meta name="theme-color" content="#06100c">
+<title>Velora — Movies & Series Tracker</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2224%22 fill=%22%230e1f18%22/><path d=%22M25 25 L75 25 L50 75 Z%22 fill=%22%231fd68a%22/></svg>">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="robots" content="noindex,nofollow">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+:root{--bg:#06100c;--side:#0a1812;--panel:#0e1f18;--line:#183428;--ink:#e8f2ec;--mute:#7e9a8b;--acc:#1fd68a;--accInk:#04170e;--bad:#e26d6d}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(900px 500px at 70% -10%,#0f3a28 0,transparent 60%),var(--bg);color:var(--ink);font:15px/1.5 "Avenir Next","Helvetica Neue",sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
+input,select,button,textarea{font:inherit;color:inherit;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+button{cursor:pointer;transition:background .15s,border-color .15s,opacity .15s}
+button:hover{opacity:.92}
+button.primary{background:var(--acc);color:var(--accInk);border-color:var(--acc);font-weight:700}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+aside{background:var(--side);border-right:1px solid var(--line);padding:22px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh}
+.logo{font:700 24px/1 "Avenir Next",sans-serif;display:flex;align-items:center;gap:10px;padding:0 10px 22px;letter-spacing:.3px}
+.logo i{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--acc),#0a7a50);display:inline-block;clip-path:polygon(0 0,100% 0,50% 100%)}
+.nav{background:none;border:0;text-align:left;padding:10px 12px;border-radius:10px;color:var(--mute);font-weight:500}
+.nav:hover{color:var(--ink)}
+.nav.on{background:#123326;color:var(--acc);box-shadow:inset 3px 0 0 var(--acc)}
+.grp{color:var(--mute);font-size:13px;padding:18px 12px 4px}
+.sp{flex:1}
+.side-tools{display:flex;flex-direction:column;gap:6px}
+.side-tools button{font-size:13px;text-align:left}
+.side-tools small{color:var(--mute);padding:2px 4px}
+main{padding:20px 28px 60px;min-width:0}
+
+/* Top bar with Auth on the right */
+.top{display:flex;gap:12px;align-items:center;margin-bottom:22px;flex-wrap:wrap}
+.top input{flex:1;min-width:200px;max-width:440px;border-radius:99px;padding:10px 18px}
+.auth-area{margin-left:auto;display:flex;align-items:center;gap:10px}
+.auth-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:99px;font-weight:600;font-size:13px;background:var(--panel);border:1px solid var(--line);color:var(--ink)}
+.auth-btn:hover{border-color:var(--acc);color:var(--acc)}
+.auth-user{display:inline-flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:4px 10px 4px 5px}
+.auth-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#0a7a50);color:var(--accInk);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;text-transform:uppercase}
+.auth-info{display:flex;flex-direction:column;line-height:1.2;max-width:140px}
+.auth-email{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.auth-sync{font-size:11px;color:var(--mute);display:flex;align-items:center;gap:4px}
+.auth-sync.synced{color:var(--acc)}
+.auth-sync.syncing{color:#f2c94c}
+.auth-sync.err{color:var(--bad)}
+.auth-out{background:none;border:0;color:var(--mute);padding:4px 6px;font-size:12px;cursor:pointer;border-radius:6px}
+.auth-out:hover{color:var(--bad)}
+
+.hero{background:linear-gradient(120deg,#0d3524 0,#0a1f16 60%);border:1px solid var(--line);border-radius:18px;padding:30px 32px;margin-bottom:26px}
+.hero h1{font:700 44px/1.2 "Avenir Next",sans-serif;margin:0 0 8px}
+.hero p{color:var(--mute);margin:0 0 20px;max-width:46ch}
+.stats{display:flex;gap:28px;flex-wrap:wrap;margin-top:22px}
+.stat b{display:block;font-size:26px}
+.stat span{color:var(--mute);font-size:13px}
+.sec{margin-bottom:26px}
+.sechead{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.sechead h2{font-size:19px;margin:0}
+.link{background:none;border:0;color:var(--acc);padding:0;font-size:13px;cursor:pointer}
+.row{display:grid;grid-auto-flow:column;grid-auto-columns:150px;gap:14px;overflow-x:auto;padding-bottom:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px 14px}
+.card{min-width:0}
+.poster{aspect-ratio:2/3;border-radius:12px;position:relative;display:flex;align-items:flex-end;padding:10px;overflow:hidden;border:1px solid var(--line);background:#0e1f18}
+.pt{font-weight:700;font-size:15px;line-height:1.2;text-shadow:0 1px 8px #000a}
+.chip{position:absolute;top:8px;left:8px;font-size:11px;background:#000a;border-radius:99px;padding:1px 8px;backdrop-filter:blur(4px)}
+.x{position:absolute;top:6px;right:6px;padding:0 7px;line-height:20px;border-radius:99px;background:#000a;border:0;opacity:0}
+.card:hover .x,.x:focus-visible{opacity:1}
+.ct{font-weight:600;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cm{color:var(--mute);font-size:13px}
+.cm b{color:#f2c94c;font-weight:600}
+.ctl{display:flex;gap:6px;margin-top:6px}
+.ctl select{padding:4px 6px;font-size:12.5px;min-width:0;flex:1}
+.ctl select.r{flex:0 0 62px}
+.empty{color:var(--mute);padding:30px 0}
+.bar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.bar h2{margin:0;font-size:24px;margin-right:auto}
+.tab{padding:5px 12px;font-size:13px;border-radius:99px}
+.tab.on{background:var(--acc);color:var(--accInk);border-color:var(--acc);font-weight:600}
+dialog{background:var(--side);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:22px;width:min(560px,92vw)}
+dialog::backdrop{background:#000b;backdrop-filter:blur(3px)}
+dialog h3{margin:0 0 12px}
+.f{display:grid;grid-template-columns:1fr 110px 80px;gap:8px;margin-bottom:8px}
+.f2{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+dialog textarea{width:100%;resize:vertical}
+dialog hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+.m{color:var(--mute);font-size:13px}
+
+.poster img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.chip,.x{z-index:2}.poster.has .pt{display:none}
+dialog{max-height:90vh;overflow:auto}
+#results{max-height:340px;overflow:auto;margin:10px 0}
+.res{display:grid;grid-template-columns:44px 1fr auto auto;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}
+.res select{padding:4px 6px;font-size:12.5px}
+.thumb{width:44px;height:64px;border-radius:6px;object-fit:cover;background:var(--panel)}
+.rt{font-weight:600}
+.notice{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px}
+.notice input{width:100%;margin:8px 0}
+dialog details{margin-top:14px}dialog summary{cursor:pointer;font-weight:600}
+
+/* Auth Dialog styling */
+.auth-tabs{display:flex;gap:6px;background:var(--bg);padding:4px;border-radius:10px;border:1px solid var(--line);margin-bottom:16px}
+.auth-tabs button{flex:1;text-align:center;border-radius:8px;padding:7px 10px}
+.auth-alert{padding:12px 14px;border-radius:10px;font-size:13px;line-height:1.45;margin:10px 0;display:none}
+.auth-alert.success{background:#123326;color:var(--acc);border:1px solid var(--acc);display:block}
+.auth-alert.error{background:#3a1414;color:#ff8a8a;border:1px solid #7a2828;display:block}
+.auth-alert.info{background:#0e2838;color:#7ad1ff;border:1px solid #1a4d6d;display:block}
+
+.toast{position:fixed;bottom:24px;right:24px;background:#0d3524;border:1px solid var(--acc);color:var(--ink);padding:14px 20px;border-radius:12px;font-size:13.5px;box-shadow:0 10px 30px #000c;z-index:9999;transform:translateY(80px);opacity:0;transition:all .28s cubic-bezier(.2,.8,.2,1);max-width:380px;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1;pointer-events:auto}
+.auth-user{cursor:pointer;transition:border-color .15s}
+.auth-user:hover{border-color:var(--acc)}
+.profile-card{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:14px 0}
+.profile-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.profile-row:last-child{border-bottom:0}
+
+/* Language Button */
+.lang-btn{background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:7px 13px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;color:var(--ink)}
+.lang-btn:hover{border-color:var(--acc);color:var(--acc)}
+
+/* Episode Stepper for Series & Anime */
+.ep-tracker{display:flex;align-items:center;justify-content:space-between;background:#091e15;border:1px solid #1c4533;border-radius:8px;padding:3px 5px;margin-top:6px;gap:4px}
+.ep-info{color:var(--ink);cursor:pointer;font-weight:700;font-size:11.5px;letter-spacing:.2px;padding:2px 6px;border-radius:5px;flex:1;text-align:center;transition:background .15s}
+.ep-info:hover{background:#133c2a;color:var(--acc)}
+.ep-btn{background:#123326;color:var(--acc);border:1px solid #1f5039;border-radius:6px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;padding:0;transition:all .15s}
+.ep-btn:hover{background:var(--acc);color:var(--accInk);border-color:var(--acc)}
+
+/* Trailer play button on poster */
+.tr-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:42px;height:42px;border-radius:50%;background:#000a;border:1.5px solid #ffffff55;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;padding-left:3px;opacity:0;transition:all .18s ease;backdrop-filter:blur(5px);cursor:pointer;z-index:3}
+.card:hover .tr-btn,.tr-btn:focus-visible{opacity:1}
+@media (hover:none){.tr-btn{opacity:1}}
+#trailerYT{color:var(--acc);font-size:13px;text-decoration:none}
+.tr-btn:hover{transform:translate(-50%,-50%) scale(1.12);background:var(--acc);color:var(--accInk);border-color:var(--acc)}
+
+@media (max-width:800px){
+  .app{grid-template-columns:1fr}
+  aside{position:static;height:auto;flex-direction:row;flex-wrap:wrap;gap:6px;padding:12px}
+  .logo{padding:0 8px 0 4px;width:100%}.grp,.sp,.side-tools{display:none}
+  main{padding:16px}.hero h1{font-size:32px}
+  .top{gap:8px}
+  .top input{order:1;max-width:100%;width:100%}
+  #openAdd{order:2}
+  .lang-btn{order:3}
+  .auth-area{order:4;margin-left:auto}
+  .f{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="logo"><i></i>Velora</div>
+    <div id="nav" style="display:contents"></div>
+    <div class="sp"></div>
+    <div class="side-tools">
+      <button id="exp">Export backup</button>
+      <button id="lb">Import Letterboxd</button>
+      <input id="lbFile" type="file" multiple hidden>
+      <button id="fp">Find posters</button>
+      <button id="imp">Import backup</button>
+      <input id="file" type="file" accept=".json" hidden>
+      <small id="storageNote">Local storage & Cloud sync</small>
+    </div>
+  </aside>
+  <main>
+    <div class="top">
+      <input id="q" type="search" placeholder="Search your library" aria-label="Search">
+      <button class="primary" id="openAdd">+ Add title</button>
+      <button type="button" id="langBtn" class="lang-btn" title="შეცვალეთ ენა / Switch Language">🇬🇪 GE</button>
+      <div id="authArea" class="auth-area"></div>
+    </div>
+    <div id="view"></div>
+  </main>
+</div>
+
+<!-- Add Title Dialog -->
+<dialog id="dlg">
+  <h3>Add a title</h3>
+  <div id="keyBox"></div>
+  <div class="f2" style="margin:0 0 8px"><select id="sStatus" aria-label="Status"></select><select id="sRating" aria-label="Your rating"></select><span class="m">Applied to what you add below</span></div>
+  <input id="sq" placeholder="Type a film, series or anime name" style="width:100%" aria-label="Search titles" autocomplete="off">
+  <div id="results"></div>
+  <details><summary>Add by hand</summary>
+  <form id="add" style="margin-top:8px">
+    <div class="f"><input id="title" placeholder="Title" required aria-label="Title"><select id="kind" aria-label="Type"></select><input id="year" placeholder="Year" inputmode="numeric" maxlength="4" aria-label="Year"></div>
+    <div class="f2"><select id="status" aria-label="Status"></select><select id="rating" aria-label="Rating"></select><button class="primary">Add</button></div>
+  </form></details>
+  <details><summary>Add many at once</summary>
+  <p class="m">One title per line. Add a rating after a comma: <b>Breaking Bad, 10</b>. A year in brackets is optional: <b>Dune (2021), 8</b>.</p>
+  <textarea id="bulkText" rows="6" placeholder="Breaking Bad, 10&#10;Attack on Titan, 9&#10;Dune (2021), 8" aria-label="List of titles"></textarea>
+  <div class="f2"><select id="bKind" aria-label="Type for all"></select><select id="bStatus" aria-label="Status for all"></select><button class="primary" id="bAdd" type="button">Add all</button><span class="m" id="bMsg"></span></div>
+  </details>
+  <div class="f2" style="justify-content:flex-end"><button id="close" type="button">Close</button></div>
+</dialog>
+
+<!-- Authentication Dialog -->
+<dialog id="authDlg">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <h3 id="authTitle" style="margin:0">Sign In</h3>
+    <button id="closeAuth" type="button" class="x" style="position:static;opacity:1;padding:2px 8px;font-size:15px">×</button>
+  </div>
+  <p class="m" id="authSub" style="margin:0 0 14px">Save your series and movies in the cloud to access them anywhere.</p>
+  
+  <div class="auth-tabs" id="authTabs">
+    <button type="button" id="tabSignIn" class="tab on">Sign In</button>
+    <button type="button" id="tabSignUp" class="tab">Register</button>
+  </div>
+
+  <form id="authForm" style="display:flex;flex-direction:column;gap:10px">
+    <div id="authEmailWrap">
+      <label class="m" style="display:block;font-size:12px;margin-bottom:4px">Email</label>
+      <input type="email" id="authEmail" required placeholder="you@example.com" style="width:100%" autocomplete="email">
+    </div>
+    <div id="authPasswordWrap">
+      <label class="m" id="authPassLabel" style="display:block;font-size:12px;margin-bottom:4px">Password</label>
+      <input type="password" id="authPassword" required minlength="6" placeholder="••••••••" style="width:100%" autocomplete="current-password">
+      <div id="authForgotRow" style="text-align:right;margin-top:4px">
+        <button type="button" id="authForgotBtn" class="link" style="font-size:12px">Forgot password?</button>
+      </div>
+    </div>
+    <div id="authAlert" class="auth-alert"></div>
+    <button type="submit" class="primary" id="authSubmit" style="padding:10px;margin-top:6px;width:100%">Sign In</button>
+  </form>
+  <div class="m" style="margin-top:14px;text-align:center;font-size:12px">
+    <span id="authToggleHint">Don't have an account?</span>
+    <button type="button" id="authToggleBtn" class="link" style="margin-left:4px">Create account</button>
+  </div>
+</dialog>
+
+<!-- User Account Profile Dialog -->
+<dialog id="profileDlg">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <h3 style="margin:0;display:flex;align-items:center;gap:8px"><span>👤</span> ჩემი ანგარიში (My Account)</h3>
+    <button id="closeProfile" type="button" class="x" style="position:static;opacity:1;padding:2px 8px;font-size:15px">×</button>
+  </div>
+  <p class="m" style="margin:0 0 14px">თქვენი მონაცემები სინქრონიზებულია Supabase-ის ღრუბელში.</p>
+  
+  <div class="profile-card">
+    <div class="profile-row">
+      <span class="m">ელფოსტა (Email):</span>
+      <b id="profEmail" style="color:var(--ink)">–</b>
+    </div>
+    <div class="profile-row">
+      <span class="m">შენახული სათაურები:</span>
+      <b id="profCount" style="color:var(--acc)">0</b>
+    </div>
+    <div class="profile-row">
+      <span class="m">ღრუბლის სტატუსი:</span>
+      <span id="profStatus" style="color:var(--acc);font-weight:600">🟢 აქტიური და სინქრონიზებული</span>
+    </div>
+  </div>
+
+  <div class="notice" style="background:#092017;border-color:#184a32">
+    <b>💡 როგორ გახსნათ სხვა ბრაუზერში ან ტელეფონზე?</b>
+    <p class="m" style="margin:6px 0 0;font-size:12.5px;line-height:1.4">
+      ნებისმიერ მოწყობილობაზე (iPhone, Android, Safari, Chrome) გახსენით ეს საიტი, დააჭირეთ <b>„შესვლა“</b>-ს და შეიყვანეთ ეს ელფოსტა და პაროლი. ყველა თქვენი სერიალი და ფილმი ავტომატურად გადმოვა!
+    </p>
+  </div>
+
+  <div class="f2" style="justify-content:space-between;margin-top:16px">
+    <button type="button" id="profSyncBtn" style="font-size:13px">🔄 ხელახლა სინქრონიზაცია</button>
+    <div style="display:flex;gap:8px">
+      <button type="button" id="profLogoutBtn" style="color:var(--bad);border-color:#5a1d1d">🚪 გამოსვლა (Log Out)</button>
+      <button type="button" class="primary" id="profCloseBtn">დახურვა</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- YouTube Trailer Dialog -->
+<dialog id="trailerDlg" style="padding:0;background:#000;border:1px solid var(--line);border-radius:18px;overflow:hidden;width:min(820px,94vw)">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:var(--side)">
+    <b id="trailerTitle" style="font-size:15px">▶ თრეილერი</b>
+    <a id="trailerYT" href="https://www.youtube.com" target="_blank" rel="noopener" style="margin-left:auto;margin-right:12px">YouTube ↗</a>
+    <button id="closeTrailer" type="button" class="x" style="position:static;opacity:1;padding:2px 8px;font-size:16px">×</button>
+  </div>
+  <div style="position:relative;padding-top:56.25%;background:#000">
+    <a id="trailerThumb" target="_blank" rel="noopener" style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#000 center/cover no-repeat;text-decoration:none;color:#fff">
+      <span style="background:#000b;border-radius:14px;padding:14px 22px;text-align:center;max-width:80%"><b style="font-size:18px">▶ <span id="trailerThumbText"></span></b><br><span id="trailerThumbNote" class="m" style="font-size:12px"></span></span>
+    </a>
+    <iframe id="trailerFrame" style="position:absolute;inset:0;width:100%;height:100%;border:0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  </div>
+</dialog>
+
+<!-- Episode Edit Dialog -->
+<dialog id="epDlg" style="width:min(380px,92vw);padding:20px;border-radius:18px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <h3 id="epDlgTitle" style="margin:0;font-size:16px">სერიის რედაქტირება</h3>
+    <button id="closeEpDlg" type="button" class="x" style="position:static;opacity:1;padding:2px 8px;font-size:15px">×</button>
+  </div>
+  <p class="m" id="epDlgSub" style="margin:0 0 16px;font-size:13px">მიუთითეთ რომელ სეზონსა და სერიაზე ხართ:</p>
+  
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">
+    <div style="background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center">
+      <label class="m" id="epSeasonLabel" style="display:block;font-size:12px;margin-bottom:6px">სეზონი (Season)</label>
+      <input type="number" id="epSeasonInput" min="1" value="1" style="width:100%;font-size:22px;font-weight:700;text-align:center;padding:6px">
+    </div>
+    <div style="background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center">
+      <label class="m" id="epNumberLabel" style="display:block;font-size:12px;margin-bottom:6px">სერია (Episode)</label>
+      <input type="number" id="epNumberInput" min="0" value="1" style="width:100%;font-size:22px;font-weight:700;text-align:center;padding:6px">
+    </div>
+  </div>
+
+  <div class="f2" style="justify-content:flex-end">
+    <button type="button" id="epCancelBtn">გაუქმება</button>
+    <button type="button" class="primary" id="epSaveBtn">შენახვა</button>
+  </div>
+</dialog>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ==========================================
+// 1. SUPABASE CONFIGURATION & SYNC
+// ==========================================
+const SUPABASE_URL = "https://kychahlyhrqvzquxpolz.supabase.co";
+const SUPABASE_KEY = "sb_publishable_nunwyDZ868G4tbiPGLDXPA_vpEkrOgs";
+
+let supabaseClient = null;
+let currentUser = null;
+let syncState = "offline"; // 'synced' | 'saving' | 'err' | 'offline'
+
+if (window.supabase && SUPABASE_URL && SUPABASE_KEY) {
+  try {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  } catch (err) {
+    console.error("Supabase client init error:", err);
+  }
+}
+
+// ==========================================
+// 2. WATCHLIST APP LOGIC & TRANSLATIONS
+// ==========================================
+const I18N = {
+  ka: {
+    home: "მთავარი",
+    movies: "ფილმები",
+    anime: "ანიმე",
+    series: "სერიალები",
+    yourStuff: "თქვენი კოლექცია",
+    watchlist: "სანახავი სია",
+    history: "ნანახი ისტორია",
+    searchPlaceholder: "მოძებნეთ თქვენს ბიბლიოთეკაში…",
+    addTitle: "+ სათაურის დამატება",
+    all: "ყველა",
+    want: "მინდა ვუყურო",
+    watching: "ვუყურებ",
+    seen: "ნანახი",
+    dropped: "მიტოვებული",
+    sortRecent: "ახლახან დამატებული",
+    sortRating: "უმაღლესი რეიტინგი",
+    sortTitle: "სათაური A–Z",
+    heroTitle: "უყურე.\nშეაფასე.\nდაიმახსოვრე.",
+    heroSub: "ფილმები, ანიმე და სერიალები ერთ ბიბლიოთეკაში — სინქრონიზებული ყველა თქვენს მოწყობილობაზე.",
+    statWatched: "ნანახი",
+    statWatching: "ვუყურებ",
+    statWant: "სანახავი",
+    statAvg: "საშუალო რეიტინგი",
+    secWatching: "ამჟამად ვუყურებ",
+    secWant: "სანახავი სია",
+    secSeen: "ბოლოს ნანახი",
+    seeAll: "ყველას ნახვა",
+    emptyLib: "თქვენი ბიბლიოთეკა ცარიელია. დააჭირეთ „+ სათაურის დამატება“-ს დასაწყებად.",
+    emptyFilter: "აქ ჯერ არაფერია.",
+    exportBackup: "სარეზერვო ექსპორტი",
+    importLetterboxd: "Letterboxd იმპორტი",
+    findPosters: "პოსტერების ძებნა",
+    importBackup: "სარეზერვო იმპორტი",
+    storageNote: "ლოკალური და Cloud სინქრონიზაცია",
+    rate: "შეაფასე",
+    notRated: "შეუფასებელი",
+    seasonAbbr: "სეზონი",
+    episodeAbbr: "სერია",
+    trailer: "თრეილერი"
+  },
+  en: {
+    home: "Home",
+    movies: "Movies",
+    anime: "Anime",
+    series: "Series",
+    yourStuff: "Your stuff",
+    watchlist: "Watchlist",
+    history: "History",
+    searchPlaceholder: "Search your library…",
+    addTitle: "+ Add title",
+    all: "All",
+    want: "Want to watch",
+    watching: "Watching",
+    seen: "Watched",
+    dropped: "Dropped",
+    sortRecent: "Recently added",
+    sortRating: "Highest rated",
+    sortTitle: "Title A–Z",
+    heroTitle: "Watch.\nRate.\nRemember.",
+    heroSub: "Movies, anime and series in one library, saved and synced across all your devices.",
+    statWatched: "Watched",
+    statWatching: "Watching",
+    statWant: "Want to watch",
+    statAvg: "Average rating",
+    secWatching: "Watching now",
+    secWant: "Want to watch",
+    secSeen: "Recently watched",
+    seeAll: "See all",
+    emptyLib: "Your library is empty. Click + Add title to start.",
+    emptyFilter: "Nothing here yet.",
+    exportBackup: "Export backup",
+    importLetterboxd: "Import Letterboxd",
+    findPosters: "Find posters",
+    importBackup: "Import backup",
+    storageNote: "Local storage & Cloud sync",
+    rate: "Rate",
+    notRated: "Not rated",
+    seasonAbbr: "S",
+    episodeAbbr: "Ep",
+    trailer: "Trailer"
+  }
+};
+
+let currentLang = localStorage.getItem("velora.lang") || "ka";
+const t = (k) => (I18N[currentLang] && I18N[currentLang][k]) || (I18N.en && I18N.en[k]) || k;
+
+function getStatuses(){
+  return [
+    {id:"want",label:t("want"),color:"#e0b84a"},
+    {id:"watching",label:t("watching"),color:"#5b9be0"},
+    {id:"seen",label:t("seen"),color:"#1fd68a",done:true},
+    {id:"dropped",label:t("dropped"),color:"#e26d6d"}
+  ];
+}
+function getKinds(){
+  return [
+    {id:"Film",label:t("movies")},
+    {id:"Anime",label:t("anime")},
+    {id:"Series",label:t("series")}
+  ];
+}
+
+const SEED=[];
+const KEY="watchlist.v1";
+let items=[],view="home",sort="new",fStatus="all";
+try{items=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){items=[]}
+const $=s=>document.querySelector(s);
+const keyOf=i=>(i.title+"|"+(i.year||"")).toLowerCase();
+const st=id=>(getStatuses().find(s=>s.id===id)||getStatuses()[0]);
+
+function merge(list){
+  const have=new Set(items.map(keyOf));let n=0;
+  list.forEach(i=>{if(!have.has(keyOf(i))){items.push({id:Date.now()+Math.random(),status:"want",kind:"Film",...i});have.add(keyOf(i));n++}});
+  return n;
+}
+
+// Save locally + cloud sync
+// The cloud copy is the main one. A device replaces its list with the cloud list when it has nothing unsaved,
+// so deletions and changes made on another device arrive here too.
+let saveTimer=null,cloudReady=false,loadingNow=false,pushing=false;
+function save(skipCloud = false){
+  try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){}
+  if(!skipCloud && currentUser && supabaseClient){
+    try{localStorage.setItem("velora.dirty","1")}catch(e){}
+    clearTimeout(saveTimer);
+    syncState = "saving";
+    renderAuth();
+    saveTimer = setTimeout(pushToSupabase, 800);
+  }
+}
+
+async function pushToSupabase(){
+  saveTimer = null;
+  if(!currentUser || !supabaseClient) return;
+  if(!cloudReady){ syncState = "err"; renderAuth(); return; }
+  pushing = true;
+  try {
+    syncState = "saving";
+    renderAuth();
+    const { error } = await supabaseClient
+      .from("lists")
+      .upsert({
+        user_id: currentUser.id,
+        data: { items: items, tmdbKey: (typeof tmdbKey === "string" ? tmdbKey : "") },
+        updated_at: new Date().toISOString()
+      });
+    if (error) throw error;
+    if(!saveTimer){ try{localStorage.removeItem("velora.dirty")}catch(e){} }
+    syncState = "synced";
+  } catch(err) {
+    console.error("Cloud save error:", err);
+    syncState = "err";
+  }
+  pushing = false;
+  renderAuth();
+}
+
+async function loadFromSupabase(){
+  if(!currentUser || !supabaseClient || loadingNow) return;
+  loadingNow = true;
+  try {
+    syncState = "saving";
+    renderAuth();
+    const { data, error } = await supabaseClient
+      .from("lists")
+      .select("data")
+      .eq("user_id", currentUser.id)
+      .maybeSingle();
+    if (error) throw error;
+    const d = data && data.data ? data.data : null;
+    const cloudItems = d && Array.isArray(d.items) ? d.items : null;
+    const cloudKey = d && d.tmdbKey ? d.tmdbKey : "";
+    const flag = "velora.synced." + currentUser.id;
+    const dirty = localStorage.getItem("velora.dirty") === "1" || !!saveTimer || pushing;
+    const known = localStorage.getItem(flag) === "1";
+    let needPush = false;
+    if(cloudItems === null){
+      needPush = items.length > 0 || !!tmdbKey;          // first login: upload what this device has
+    } else if(dirty || !known){
+      merge(cloudItems); needPush = true;                 // unsaved or first time on this device: combine both
+    } else {
+      items = cloudItems.slice();                         // normal case: the cloud list wins
+    }
+    if(cloudKey){ tmdbKey = cloudKey; try{localStorage.setItem(TKEY, cloudKey)}catch(e){} }
+    else if(tmdbKey){ needPush = true; }
+    cloudReady = true;
+    try{localStorage.setItem(flag, "1")}catch(e){}
+    save(true);
+    render();
+    if(needPush) await pushToSupabase();
+    syncState = "synced";
+  } catch(err) {
+    console.error("Cloud load error:", err);
+    syncState = "err";
+  }
+  loadingNow = false;
+  renderAuth();
+}
+
+async function beforeLogout(){
+  if(saveTimer){ clearTimeout(saveTimer); await pushToSupabase(); }
+  if(localStorage.getItem("velora.dirty") === "1"){
+    return confirm("ცვლილებები ღრუბელში ვერ შეინახა. მაინც გამოხვიდე? ამ მოწყობილობაზე შენახული სია წაიშლება.");
+  }
+  return true;
+}
+function wipeLocal(){
+  items = []; cloudReady = false;
+  try{localStorage.removeItem(KEY);localStorage.removeItem("velora.dirty")}catch(e){}
+  render();
+}
+
+// Auth UI rendering (Top Right)
+function renderAuth(){
+  const box = $("#authArea");
+  if(!box) return;
+  box.innerHTML = "";
+
+  if(!currentUser){
+    const btn = el("button","auth-btn","👤 Sign In / Register");
+    btn.onclick = () => openAuthModal("signin");
+    box.append(btn);
+    return;
+  }
+
+  // Logged in UI
+  const wrap = el("div","auth-user");
+  const initial = (currentUser.email || "U")[0].toUpperCase();
+  const av = el("div","auth-avatar", initial);
+  
+  const info = el("div","auth-info");
+  const emailSpan = el("div","auth-email", currentUser.email);
+  emailSpan.title = currentUser.email;
+  
+  const syncSpan = el("div","auth-sync " + (syncState==="synced"?"synced":syncState==="saving"?"syncing":syncState==="err"?"err":""));
+  if (syncState === "saving") {
+    syncSpan.textContent = "☁️ Saving…";
+  } else if (syncState === "synced") {
+    syncSpan.textContent = "☁️ Synced";
+  } else if (syncState === "err") {
+    syncSpan.textContent = "⚠️ Sync error";
+  } else {
+    syncSpan.textContent = "☁️ Cloud active";
+  }
+  info.append(emailSpan, syncSpan);
+
+  // Clicking user pill opens profile modal
+  wrap.onclick = (e) => {
+    if(e.target === outBtn) return;
+    openProfileModal();
+  };
+
+  const outBtn = el("button","auth-out","🚪 Log out");
+  outBtn.title = "Sign out";
+  outBtn.onclick = async (e) => {
+    e.stopPropagation();
+    if(confirm("ნამდვილად გსურთ გამოსვლა ანგარიშიდან: " + currentUser.email + "?")){
+      if(!(await beforeLogout())) return;
+      if(supabaseClient) await supabaseClient.auth.signOut();
+      wipeLocal();
+      currentUser = null;
+      syncState = "offline";
+      renderAuth();
+      showToast("🚪 თქვენ გამოხვედით ანგარიშიდან.");
+    }
+  };
+
+  wrap.append(av, info, outBtn);
+  box.append(wrap);
+}
+
+// Toast notification helper
+let toastTimer = null;
+function showToast(msg){
+  const t = $("#toast");
+  if(!t) return;
+  t.innerHTML = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 4200);
+}
+
+// Profile Modal Logic
+function openProfileModal(){
+  if(!currentUser) return;
+  $("#profEmail").textContent = currentUser.email;
+  $("#profCount").textContent = items.length + " ფილმი/სერიალი";
+  $("#profStatus").textContent = syncState === "synced" ? "🟢 აქტიური და სინქრონიზებული" : 
+                                  syncState === "saving" ? "⏳ მონაცემები ინახება…" : "⚠️ კავშირის შეცდომა";
+  $("#profileDlg").showModal();
+}
+$("#closeProfile").onclick = () => $("#profileDlg").close();
+$("#profCloseBtn").onclick = () => $("#profileDlg").close();
+$("#profSyncBtn").onclick = async () => {
+  const btn = $("#profSyncBtn");
+  btn.textContent = "⏳ სინქრონიზდება…";
+  await pushToSupabase();
+  btn.textContent = "✅ სინქრონიზებულია!";
+  setTimeout(() => btn.textContent = "🔄 ხელახლა სინქრონიზაცია", 1800);
+};
+$("#profLogoutBtn").onclick = async () => {
+  if(confirm("ნამდვილად გსურთ გამოსვლა ანგარიშიდან?")){
+    $("#profileDlg").close();
+    if(!(await beforeLogout())) return;
+      if(supabaseClient) await supabaseClient.auth.signOut();
+      wipeLocal();
+    currentUser = null;
+    syncState = "offline";
+    renderAuth();
+    showToast("🚪 თქვენ გამოხვედით ანგარიშიდან.");
+  }
+};
+
+// Error translation helper
+function translateAuthError(err){
+  if(!err) return "დაფიქსირდა უცნობი შეცდომა.";
+  const msg = (err.message || "").toLowerCase();
+  if(msg.includes("email not confirmed")){
+    return "⚠️ <b>თქვენი ელფოსტა ჯერ არ არის დადასტურებული!</b><br>Supabase-მა გამოგიგზავნათ დადასტურების წერილი. გთხოვთ შეამოწმოთ თქვენი ელფოსტის შემოსულები (ან Spam საქაღალდე) და დააჭიროთ დასტურის ბმულს.<br><br>💡 <i>თუ გინდათ, რომ იმეილის დამოწმების გარეშე ეგრევე შეხვიდეთ, Supabase-ის პანელში გამორთეთ „Confirm email“.</i>";
+  }
+  if(msg.includes("invalid login credentials") || msg.includes("invalid credentials")){
+    return "❌ <b>არასწორი ელფოსტა ან პაროლი.</b><br>გადაამოწმეთ მონაცემები. თუ ახლახან დარეგისტრირდით, დარწმუნდით, რომ ელფოსტა დაადასტურეთ იმეილში.";
+  }
+  if(msg.includes("already registered") || msg.includes("already in use")){
+    return "ℹ️ <b>ეს ელფოსტა უკვე დარეგისტრირებულია!</b><br>გთხოვთ გადახვიდეთ „შესვლა“-ს ჩანართზე და შეიყვანოთ პაროლი.";
+  }
+  if(msg.includes("password should be at least") || msg.includes("at least 6 characters")){
+    return "❌ <b>პაროლი ძალიან მოკლეა.</b><br>პაროლი უნდა შედგებოდეს მინიმუმ 6 სიმბოლოსგან.";
+  }
+  if(msg.includes("rate limit") || msg.includes("too many requests")){
+    return "⏳ <b>ძალიან ბევრი მცდელობა.</b><br>გთხოვთ მოიცადოთ რამდენიმე წუთი და სცადოთ ხელახლა.";
+  }
+  return "❌ <b>შეცდომა:</b> " + (err.message || "ავტორიზაცია ვერ მოხერხდა.");
+}
+
+// Auth Dialog Logic
+let authMode = "signin"; // 'signin' | 'signup' | 'forgot' | 'update_password'
+function setAuthMode(mode){
+  authMode = mode;
+  const alertBox = $("#authAlert");
+  alertBox.className = "auth-alert";
+  alertBox.style.display = "none";
+  alertBox.innerHTML = "";
+  
+  const tabs = $("#authTabs");
+  const emailWrap = $("#authEmailWrap");
+  const passWrap = $("#authPasswordWrap");
+  const forgotRow = $("#authForgotRow");
+  const passLabel = $("#authPassLabel");
+  const emailInput = $("#authEmail");
+  const passInput = $("#authPassword");
+
+  if(mode === "signin"){
+    tabs.style.display = "flex";
+    $("#tabSignIn").classList.add("on");
+    $("#tabSignUp").classList.remove("on");
+    emailWrap.style.display = "block";
+    passWrap.style.display = "block";
+    forgotRow.style.display = "block";
+    passLabel.textContent = "პაროლი (Password)";
+    emailInput.required = true;
+    passInput.required = true;
+    $("#authTitle").textContent = "შესვლა (Sign In)";
+    $("#authSub").textContent = "შედით თქვენს ანგარიშში, რათა თქვენი სერიალები სინქრონიზდეს ყველა მოწყობილობაზე.";
+    $("#authSubmit").textContent = "შესვლა";
+    $("#authToggleHint").textContent = "არ გაქვთ ანგარიში?";
+    $("#authToggleBtn").textContent = "ახალი რეგისტრაცია";
+  } else if(mode === "signup"){
+    tabs.style.display = "flex";
+    $("#tabSignUp").classList.add("on");
+    $("#tabSignIn").classList.remove("on");
+    emailWrap.style.display = "block";
+    passWrap.style.display = "block";
+    forgotRow.style.display = "none";
+    passLabel.textContent = "პაროლი (Password, მინიმუმ 6 სიმბოლო)";
+    emailInput.required = true;
+    passInput.required = true;
+    $("#authTitle").textContent = "რეგისტრაცია (Register)";
+    $("#authSub").textContent = "შექმენით ექაუნთი, რათა თქვენი watchlist დაცულად შეინახოს ღრუბელში.";
+    $("#authSubmit").textContent = "რეგისტრაცია";
+    $("#authToggleHint").textContent = "უკვე გაქვთ ანგარიში?";
+    $("#authToggleBtn").textContent = "შესვლა (Sign In)";
+  } else if(mode === "forgot"){
+    tabs.style.display = "none";
+    emailWrap.style.display = "block";
+    passWrap.style.display = "none";
+    emailInput.required = true;
+    passInput.required = false;
+    $("#authTitle").textContent = "პაროლის აღდგენა";
+    $("#authSub").textContent = "ჩაწერეთ თქვენი ელფოსტა და გამოგიგზავნით პაროლის აღდგენის ბმულს.";
+    $("#authSubmit").textContent = "აღდგენის ბმულის გაგზავნა";
+    $("#authToggleHint").textContent = "გახსოვთ პაროლი?";
+    $("#authToggleBtn").textContent = "უკან შესვლაზე";
+  } else if(mode === "update_password"){
+    tabs.style.display = "none";
+    emailWrap.style.display = "none";
+    passWrap.style.display = "block";
+    forgotRow.style.display = "none";
+    passLabel.textContent = "ახალი პაროლი (New Password)";
+    emailInput.required = false;
+    passInput.required = true;
+    passInput.value = "";
+    $("#authTitle").textContent = "ახალი პაროლის დაყენება";
+    $("#authSub").textContent = "შეიყვანეთ თქვენი ახალი პაროლი ქვემოთ.";
+    $("#authSubmit").textContent = "ახალი პაროლის შენახვა";
+    $("#authToggleHint").textContent = "";
+    $("#authToggleBtn").textContent = "გაუქმება";
+  }
+}
+
+function openAuthModal(mode="signin"){
+  setAuthMode(mode);
+  if(mode !== "update_password"){
+    $("#authEmail").value = "";
+  }
+  $("#authPassword").value = "";
+  $("#authDlg").showModal();
+}
+
+$("#tabSignIn").onclick = () => setAuthMode("signin");
+$("#tabSignUp").onclick = () => setAuthMode("signup");
+$("#authForgotBtn").onclick = () => setAuthMode("forgot");
+$("#authToggleBtn").onclick = () => {
+  if(authMode === "forgot" || authMode === "update_password") setAuthMode("signin");
+  else setAuthMode(authMode === "signin" ? "signup" : "signin");
+};
+$("#closeAuth").onclick = () => $("#authDlg").close();
+
+$("#authForm").onsubmit = async (e) => {
+  e.preventDefault();
+  const alertBox = $("#authAlert");
+  const email = $("#authEmail").value.trim();
+  const password = $("#authPassword").value;
+  const submitBtn = $("#authSubmit");
+
+  if(!supabaseClient){
+    alertBox.className = "auth-alert error";
+    alertBox.innerHTML = "❌ Supabase დაკავშირება ვერ მოხერხდა.";
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "⏳ მუშავდება…";
+  alertBox.style.display = "none";
+
+  try {
+    if(authMode === "signup"){
+      const { data, error } = await supabaseClient.auth.signUp({ email, password });
+      if(error) throw error;
+      
+      if(data.session){
+        currentUser = data.session.user;
+        alertBox.className = "auth-alert success";
+        alertBox.innerHTML = "🎉 <b>რეგისტრაცია წარმატებით დასრულდა!</b><br>თქვენ უკვე შესული ხართ სისტემაში.";
+        await loadFromSupabase();
+        showToast("🎉 ანგარიში შეიქმნა! მოგესალმებით, " + email);
+        setTimeout(() => $("#authDlg").close(), 900);
+      } else {
+        alertBox.className = "auth-alert info";
+        alertBox.innerHTML = "<b>✉️ რეგისტრაცია მიღებულია!</b><br>Supabase-მა გამოგიგზავნათ დადასტურების წერილი თქვენს ელფოსტაზე: <b>" + email + "</b>.<br><br>გთხოვთ შეამოწმოთ თქვენი ელფოსტის შემოსულები (Inbox ან Spam) და დააჭიროთ დასტურის ბმულს, რის შემდეგაც შეძლებთ შესვლას ნებისმიერი მოწყობილობიდან.<br><br><small style='color:var(--mute)'>💡 რჩევა: რომ ყოველ რეგისტრაციაზე იმეილის შემოწმება არ დაგჭირდეთ, Supabase-ის პანელში (Authentication ➡️ Providers ➡️ Email) გამორთეთ „Confirm email“.</small>";
+      }
+    } else if(authMode === "signin"){
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if(error) throw error;
+
+      currentUser = data.user;
+      alertBox.className = "auth-alert success";
+      alertBox.innerHTML = "✅ <b>წარმატებით შეხვედით!</b> მონაცემები იტვირთება…";
+      await loadFromSupabase();
+      showToast("✅ მოგესალმებით! თქვენ წარმატებით შეხვედით: <b>" + currentUser.email + "</b>");
+      setTimeout(() => $("#authDlg").close(), 600);
+    } else if(authMode === "forgot"){
+      const redirectUrl = window.location.href.split('#')[0];
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectUrl
+      });
+      if(error) throw error;
+      alertBox.className = "auth-alert success";
+      alertBox.innerHTML = "✉️ <b>აღდგენის ბმული გაგზავნილია!</b><br>გთხოვთ შეამოწმოთ თქვენი ელფოსტა (Inbox / Spam).";
+    } else if(authMode === "update_password"){
+      const { error } = await supabaseClient.auth.updateUser({ password });
+      if(error) throw error;
+      alertBox.className = "auth-alert success";
+      alertBox.innerHTML = "✅ <b>პაროლი წარმატებით განახლდა!</b>";
+      showToast("✅ პაროლი განახლებულია!");
+      setTimeout(() => {
+        $("#authDlg").close();
+        setAuthMode("signin");
+      }, 1200);
+    }
+  } catch(err) {
+    alertBox.className = "auth-alert error";
+    alertBox.innerHTML = translateAuthError(err);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = authMode === "signin" ? "შესვლა" : 
+                            authMode === "signup" ? "რეგისტრაცია" : 
+                            authMode === "forgot" ? "აღდგენის ბმულის გაგზავნა" : "ახალი პაროლის შენახვა";
+  }
+};
+
+// Check existing session on load
+async function initAuth(){
+  renderAuth();
+  if(!supabaseClient) return;
+  try {
+    // Check if recovery link was opened
+    if(window.location.hash.includes("type=recovery") || window.location.href.includes("type=recovery")){
+      openAuthModal("update_password");
+    }
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if(session?.user){
+      currentUser = session.user;
+      await loadFromSupabase();
+    }
+    // Listen to auth events
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if(event === "PASSWORD_RECOVERY"){
+        openAuthModal("update_password");
+      } else if(session?.user){
+        const changed = !currentUser || currentUser.id !== session.user.id;
+        currentUser = session.user;
+        if(changed) loadFromSupabase();
+      } else {
+        currentUser = null;
+        syncState = "offline";
+        renderAuth();
+      }
+    });
+  } catch(e){
+    console.error("Session check error:", e);
+  }
+}
+
+function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e}
+const opt=(v,l)=>{const o=document.createElement("option");o.value=v;o.textContent=l;return o};
+function ratingOpts(sel,first){sel.innerHTML="";sel.append(opt("",first));for(let n=10;n>=1;n--)sel.append(opt(String(n),"★ "+n))}
+
+function fillDialogSelects(){
+  $("#kind").innerHTML="";$("#bKind").innerHTML="";
+  getKinds().forEach(k=>{$("#kind").append(opt(k.id,k.label));$("#bKind").append(opt(k.id,k.label))});
+  $("#status").innerHTML="";$("#bStatus").innerHTML="";
+  getStatuses().forEach(s=>{$("#status").append(opt(s.id,s.label));$("#bStatus").append(opt(s.id,s.label))});
+  ratingOpts($("#rating"), t("notRated"));
+}
+fillDialogSelects();
+
+function updateStaticLang(){
+  const b=$("#langBtn");
+  if(b) b.textContent = currentLang==="ka" ? "🇬🇪 GE" : "🇬🇧 EN";
+  $("#q").placeholder = t("searchPlaceholder");
+  $("#openAdd").textContent = t("addTitle");
+  $("#exp").textContent = t("exportBackup");
+  $("#lb").textContent = t("importLetterboxd");
+  $("#fp").textContent = t("findPosters");
+  $("#imp").textContent = t("importBackup");
+  $("#storageNote").textContent = t("storageNote");
+  fillDialogSelects();
+}
+$("#langBtn").onclick=()=>{
+  currentLang = currentLang === "ka" ? "en" : "ka";
+  localStorage.setItem("velora.lang", currentLang);
+  updateStaticLang();
+  render();
+};
+
+// YouTube Trailer playback
+async function resolveMedia(i){
+  // Known exactly: stored from TMDB search.
+  if(i.tmdbId&&i.media)return {id:i.tmdbId,type:i.media};
+  // Older Film/Series items with an id: the type follows from the kind.
+  if(i.tmdbId&&i.kind!=="Anime"){i.media=i.kind==="Series"?"tv":"movie";return {id:i.tmdbId,type:i.media}}
+  // Anime (can be a TV show or a film) or no id yet: look it up by name and year.
+  const sr=await tmdb("/search/multi",{query:i.title,include_adult:"false"});
+  const list=(sr.results||[]).filter(r=>r.media_type==="tv"||r.media_type==="movie");
+  const yr=r=>String(r.release_date||r.first_air_date||"").slice(0,4);
+  const pick=list.find(r=>i.year&&yr(r)===String(i.year))||list.find(r=>i.kind==="Series"&&r.media_type==="tv")||list[0];
+  if(!pick)return null;
+  i.media=pick.media_type;i.tmdbId=pick.id;save();
+  return {id:pick.id,type:pick.media_type};
+}
+async function fetchTrailer(r){
+  for(const lang of ["en-US","ja-JP",""]){
+    let d;
+    try{d=await tmdb("/"+r.type+"/"+r.id+"/videos",lang?{language:lang}:{})}catch(e){if(e.message==="key")throw e;continue}
+    const yt=(d.results||[]).filter(v=>v.site==="YouTube"&&v.key);
+    const pick=yt.find(v=>v.type==="Trailer"&&v.official)||yt.find(v=>v.type==="Trailer")||yt.find(v=>v.type==="Teaser")||yt[0];
+    if(pick)return pick;
+  }
+  return null;
+}
+async function playTrailer(i){
+  const dlg=$("#trailerDlg"),titleEl=$("#trailerTitle"),frame=$("#trailerFrame"),link=$("#trailerYT");
+  const ka=currentLang==="ka";
+  link.href="https://www.youtube.com/results?search_query="+encodeURIComponent(i.title+" "+(i.year||"")+" trailer");
+  link.textContent=ka?"YouTube-ზე ძებნა ↗":"Search on YouTube ↗";
+  titleEl.textContent="▶ "+i.title+(i.year?" ("+i.year+")":"");
+  const thumb=$("#trailerThumb");thumb.style.display="none";frame.style.display="";
+  frame.src="about:blank";
+  if(!dlg.open)dlg.showModal();
+  try{
+    if(!tmdbKey)throw new Error("key");
+    const r=await resolveMedia(i);
+    if(!r)throw new Error("nf");
+    const v=await fetchTrailer(r);
+    if(!v){titleEl.textContent=i.title+" — "+(ka?"თრეილერი ვერ მოიძებნა":"Trailer not found");return}
+    link.href="https://www.youtube.com/watch?v="+v.key;
+    link.textContent=ka?"YouTube-ზე გახსნა ↗":"Open on YouTube ↗";
+    if(location.protocol==="file:"){
+      // YouTube refuses to play inside a page opened from a file (Error 153), so show a preview that opens YouTube.
+      frame.style.display="none";thumb.href="https://www.youtube.com/watch?v="+v.key;
+      thumb.style.backgroundImage="url(https://i.ytimg.com/vi/"+v.key+"/hqdefault.jpg)";thumb.style.display="flex";
+      $("#trailerThumbText").textContent=ka?"YouTube-ზე ყურება":"Watch on YouTube";
+      $("#trailerThumbNote").textContent=ka?"გვერდი ფაილიდან იხსნება, ამიტომ ვიდეო აქ ვერ ჩაიშენება. ინტერნეტ-მისამართზე აქვე ითამაშებს.":"This page is opened from a file, so the video can't play here. Online, it plays in this window.";
+    }else{
+      frame.src="https://www.youtube-nocookie.com/embed/"+v.key+"?autoplay=1&rel=0";
+    }
+  }catch(err){
+    titleEl.textContent=i.title+" — "+(err.message==="key"?(ka?"TMDB გასაღები არ მუშაობს":"TMDB key problem"):ka?"თრეილერის ჩატვირთვა ვერ მოხერხდა":"Couldn't load trailer");
+  }
+}
+$("#trailerDlg").addEventListener("close",()=>{$("#trailerFrame").src="about:blank"});
+$("#closeTrailer").onclick=()=>{
+  $("#trailerFrame").src="";
+  $("#trailerDlg").close();
+};
+
+// Episode Edit Dialog Handlers
+let currentEditItem = null;
+function openEpDialog(i){
+  currentEditItem = i;
+  $("#epDlgTitle").textContent = `${i.title}`;
+  $("#epSeasonInput").value = i.season || 1;
+  $("#epNumberInput").value = i.episode !== undefined ? i.episode : 1;
+  $("#epSeasonLabel").textContent = currentLang === "ka" ? "სეზონი" : "Season";
+  $("#epNumberLabel").textContent = currentLang === "ka" ? "სერია" : "Episode";
+  $("#epDlg").showModal();
+}
+$("#closeEpDlg").onclick = () => $("#epDlg").close();
+$("#epCancelBtn").onclick = () => $("#epDlg").close();
+$("#epSaveBtn").onclick = () => {
+  if(!currentEditItem) return;
+  const s = parseInt($("#epSeasonInput").value, 10);
+  const ep = parseInt($("#epNumberInput").value, 10);
+  if(!isNaN(s) && s > 0) currentEditItem.season = s;
+  if(!isNaN(ep) && ep >= 0) currentEditItem.episode = ep;
+  if(currentEditItem.status === "want") currentEditItem.status = "watching";
+  save();
+  render();
+  $("#epDlg").close();
+  showToast(`🍿 ${currentEditItem.title} — ${t("seasonAbbr")} ${currentEditItem.season}, ${t("episodeAbbr")} ${currentEditItem.episode}`);
+};
+
+function hue(t){let h=0;for(const c of t)h=(h*31+c.charCodeAt(0))%360;return h}
+function card(i){
+  const c=el("div","card"),h=hue(i.title);
+  const p=el("div","poster");p.style.background=`linear-gradient(165deg,hsl(${h} 50% 30%),hsl(${(h+50)%360} 55% 9%))`;
+  p.append(el("span","chip",(getKinds().find(k=>k.id===i.kind)||{label:i.kind}).label),el("span","pt",i.title));
+  
+  if(i.poster){
+    const im=el("img");im.src=i.poster;im.alt="";im.loading="lazy";p.classList.add("has");
+    im.onerror=()=>{im.remove();p.classList.remove("has")};
+    p.prepend(im);
+  }
+
+  // Trailer play button
+  const trBtn=el("button","tr-btn","▶");
+  trBtn.title=t("trailer");
+  trBtn.onclick=(e)=>{e.stopPropagation();playTrailer(i)};
+  p.append(trBtn);
+  p.style.cursor="pointer";p.onclick=()=>playTrailer(i);
+
+  const x=el("button","x","×");x.title="Remove";x.setAttribute("aria-label","Remove "+i.title);
+  x.onclick=(e)=>{e.stopPropagation();if(confirm('Remove "'+i.title+'"?')){items=items.filter(z=>z!==i);save();render()}};
+  p.append(x);
+
+  const ct=el("div","ct",i.title);ct.title=i.title;
+  const cm=el("div","cm");
+  if(i.rating){const b=el("b","","★ "+i.rating);cm.append(b,(i.year?" · "+i.year:""))}else cm.textContent=i.year||t("notRated");
+  
+  // Episode tracker for Series and Anime
+  if(i.kind==="Series" || i.kind==="Anime"){
+    if(!i.season) i.season = 1;
+    if(i.episode === undefined) i.episode = 1;
+    const epTrack = el("div", "ep-tracker");
+    
+    // Minus button (-1)
+    const epMinus = el("button", "ep-btn", "–");
+    epMinus.title = currentLang === "ka" ? "წინა სერია (-1)" : "Previous episode (-1)";
+    epMinus.onclick = (e) => {
+      e.stopPropagation();
+      if((i.episode || 1) > 0){
+        i.episode = Math.max(0, (i.episode || 1) - 1);
+        save();
+        render();
+        showToast(`⏪ ${i.title} — ${t("seasonAbbr")} ${i.season}, ${t("episodeAbbr")} ${i.episode}`);
+      }
+    };
+
+    // Clickable Season & Episode label (opens dialog)
+    const epInfo = el("span", "ep-info", `${t("seasonAbbr")} ${i.season} · ${t("episodeAbbr")} ${i.episode}`);
+    epInfo.title = currentLang === "ka" ? "დააწკაპუნეთ სეზონის/სერიის ზუსტად შესაცვლელად" : "Click to edit season/episode";
+    epInfo.onclick = (e) => {
+      e.stopPropagation();
+      openEpDialog(i);
+    };
+
+    // Plus button (+1)
+    const epPlus = el("button", "ep-btn", "+");
+    epPlus.title = currentLang === "ka" ? "შემდეგი სერია (+1)" : "Next episode (+1)";
+    epPlus.onclick = (e) => {
+      e.stopPropagation();
+      i.episode = (i.episode || 0) + 1;
+      if(i.status === "want") i.status = "watching";
+      save();
+      render();
+      showToast(`🍿 ${i.title} — ${t("seasonAbbr")} ${i.season}, ${t("episodeAbbr")} ${i.episode}`);
+    };
+
+    epTrack.append(epMinus, epInfo, epPlus);
+    c.append(p, ct, cm, epTrack);
+  } else {
+    c.append(p, ct, cm);
+  }
+
+  const ctl=el("div","ctl");
+  const s=el("select");getStatuses().forEach(z=>s.append(opt(z.id,z.label)));s.value=st(i.status).id;s.style.color=st(i.status).color;s.setAttribute("aria-label","Status");
+  s.onchange=()=>{i.status=s.value;save();render()};
+  const r=el("select","r");ratingOpts(r,t("rate"));r.value=i.rating?String(i.rating):"";r.setAttribute("aria-label","Rating");
+  r.onchange=()=>{i.rating=r.value?Number(r.value):null;save();render()};
+  ctl.append(s,r);
+  c.append(ctl);
+  return c;
+}
+
+function cards(list,cls){const g=el("div",cls);list.forEach(i=>g.append(card(i)));return g}
+const recent=l=>l.slice().reverse();
+const isDone=i=>st(i.status).done;
+
+function nav(){
+  const n=$("#nav");n.innerHTML="";
+  const add=(id,label)=>{const b=el("button","nav"+(view===id?" on":""),label);b.onclick=()=>{view=id;fStatus="all";$("#q").value="";render()};n.append(b)};
+  add("home", t("home"));getKinds().forEach(k=>add(k.id,k.label));
+  n.append(el("div","grp", t("yourStuff")));
+  add("want", t("watchlist"));add("done", t("history"));
+}
+
+function filtered(){
+  const q=$("#q").value.trim().toLowerCase();
+  let l=items.filter(i=>i.title.toLowerCase().includes(q));
+  if(!q){
+    if(getKinds().some(k=>k.id===view))l=l.filter(i=>i.kind===view);
+    else if(view==="want")l=l.filter(i=>i.status==="want");
+    else if(view==="done")l=l.filter(isDone);
+  }
+  if(fStatus!=="all")l=l.filter(i=>i.status===fStatus);
+  if(sort==="new")l=recent(l);
+  else if(sort==="rating")l.sort((a,b)=>(b.rating||0)-(a.rating||0));
+  else l.sort((a,b)=>a.title.localeCompare(b.title));
+  return l;
+}
+
+function home(v){
+  const rated=items.filter(i=>i.rating);
+  const avg=rated.length?(rated.reduce((a,i)=>a+i.rating,0)/rated.length).toFixed(1):"–";
+  const hero=el("div","hero");
+  hero.append(el("h1","", t("heroTitle")));hero.querySelector("h1").style.whiteSpace="pre-line";
+  hero.append(el("p","", t("heroSub")));
+  const b=el("button","primary", t("addTitle"));b.onclick=()=>$("#dlg").showModal();hero.append(b);
+  const stats=el("div","stats");
+  [[items.filter(isDone).length, t("statWatched")],
+   [items.filter(i=>i.status==="watching").length, t("statWatching")],
+   [items.filter(i=>i.status==="want").length, t("statWant")],
+   [avg, t("statAvg")]]
+   .forEach(([n,l])=>{const s=el("div","stat");s.append(el("b","",String(n)),el("span","",l));stats.append(s)});
+  hero.append(stats);v.append(hero);
+  if(!items.length){v.append(el("div","empty", t("emptyLib")));return}
+  const sec=(title,list,go)=>{
+    if(!list.length)return;
+    const s=el("div","sec"),h=el("div","sechead");h.append(el("h2","",title));
+    const l=el("button","link", t("seeAll"));l.onclick=()=>{view=go.view;fStatus=go.status||"all";render()};h.append(l);
+    s.append(h,cards(recent(list).slice(0,12),"row"));v.append(s);
+  };
+  sec(t("secWatching"),items.filter(i=>i.status==="watching"),{view:"home",status:"watching"});
+  sec(t("secWant"),items.filter(i=>i.status==="want"),{view:"want"});
+  sec(t("secSeen"),items.filter(isDone),{view:"done"});
+}
+
+function render(){
+  nav();renderAuth();updateStaticLang();const v=$("#view");v.innerHTML="";
+  const q=$("#q").value.trim();
+  if(view==="home"&&!q&&fStatus==="all"){home(v);return}
+  const title=q?(currentLang==="ka"?"ძიების შედეგები":"Search results"):view==="home"?st(fStatus).label:view==="want"?t("watchlist"):view==="done"?t("history"):(getKinds().find(k=>k.id===view)||{}).label;
+  const bar=el("div","bar");bar.append(el("h2","",title));
+  if(!q&&view!=="want"){
+    [["all", t("all")],...getStatuses().map(s=>[s.id,s.label])].forEach(([id,l])=>{
+      const tBtn=el("button","tab"+(fStatus===id?" on":""),l);tBtn.onclick=()=>{fStatus=id;render()};bar.append(tBtn)});
+  }
+  const so=el("select");
+  [[ "new", t("sortRecent")],["rating", t("sortRating")],["title", t("sortTitle")]].forEach(([a,b])=>so.append(opt(a,b)));
+  so.value=sort;so.onchange=()=>{sort=so.value;render()};so.setAttribute("aria-label","Sort");bar.append(so);
+  v.append(bar);
+  const l=filtered();
+  v.append(l.length?cards(l,"grid"):el("div","empty", t("emptyFilter")));
+}
+$("#q").oninput=render;
+$("#openAdd").onclick=()=>$("#dlg").showModal();
+$("#close").onclick=()=>$("#dlg").close();
+$("#add").onsubmit=e=>{
+  e.preventDefault();
+  merge([{title:$("#title").value.trim(),kind:$("#kind").value,year:$("#year").value.trim(),status:$("#status").value,rating:$("#rating").value?Number($("#rating").value):null}]);
+  save();const k=$("#kind").value,s=$("#status").value;e.target.reset();$("#kind").value=k;$("#status").value=s;render();$("#title").focus();
+};
+$("#bAdd").onclick=()=>{
+  const re=/^(.*?)(?:\s*\((\d{4})\))?(?:\s*(?:[|,;]|\s[-\u2013\u2014]\s)\s*(\d{1,2}))?\s*$/;
+  const list=[];
+  $("#bulkText").value.split("\n").forEach(line=>{
+    line=line.trim();if(!line)return;
+    const m=line.match(re);let title=m?m[1].trim():line,year=m&&m[2]||"",r=m&&m[3]?Number(m[3]):null;
+    if(r!==null&&(r<1||r>10)){title=line;r=null}
+    if(!title)return;
+    list.push({title,year,rating:r,kind:$("#bKind").value,status:$("#bStatus").value});
+  });
+  const n=merge(list);save();render();
+  $("#bMsg").textContent=n+" added"+(list.length-n?", "+(list.length-n)+" already in your list":"");
+  if(n)$("#bulkText").value="";
+};
+$("#exp").onclick=()=>{
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(items,null,2)],{type:"application/json"}));
+  a.download="velora-watchlist-backup.json";a.click();
+};
+$("#imp").onclick=()=>$("#file").click();
+$("#file").onchange=async e=>{
+  try{const n=merge(JSON.parse(await e.target.files[0].text()));save();render();alert(n+" new titles added.")}
+  catch(err){alert("That file isn't a valid backup.")}
+  e.target.value="";
+};
+
+// ---- TMDB search ----
+const TKEY="velora.tmdbKey";let tmdbKey="";try{tmdbKey=localStorage.getItem(TKEY)||""}catch(e){}
+const HELP="Open this file in Safari or Chrome. If it still fails, check TMDB API key.";
+async function tmdb(path,params){
+  const u=new URL("https://api.themoviedb.org/3"+path);
+  Object.entries(params||{}).forEach(([k,v])=>u.searchParams.set(k,v));
+  const h={};
+  if(tmdbKey.length>40)h.Authorization="Bearer "+tmdbKey;else u.searchParams.set("api_key",tmdbKey);
+  const r=await fetch(u,{headers:h});
+  if(r.status===401)throw new Error("key");
+  if(!r.ok)throw new Error("http "+r.status);
+  return r.json();
+}
+function mapResult(r){
+  if(r.media_type!=="movie"&&r.media_type!=="tv")return null;
+  const anime=(r.genre_ids||[]).includes(16)&&r.original_language==="ja";
+  const date=r.release_date||r.first_air_date||"";
+  return {title:r.title||r.name,year:date.slice(0,4),kind:anime?"Anime":r.media_type==="tv"?"Series":"Film",
+    poster:r.poster_path?"https://image.tmdb.org/t/p/w342"+r.poster_path:"",tmdbId:r.id,media:r.media_type,overview:r.overview||"",
+    tmdbRating:r.vote_average?Math.round(r.vote_average*10)/10:null};
+}
+function keyBox(){
+  const b=$("#keyBox");b.innerHTML="";
+  if(tmdbKey){const l=el("button","link","Change TMDB key");l.onclick=()=>{tmdbKey="";try{localStorage.removeItem(TKEY)}catch(e){}save();keyBox()};
+    const d=el("div","m","Search key is set. ");d.append(l," · ");
+    const t=el("button","link","Test connection");const out=el("span","m"," ");
+    t.onclick=async()=>{out.textContent=" Testing…";
+      try{await tmdb("/configuration");out.textContent=" Connected to TMDB ✓";}
+      catch(e){out.textContent=e.message==="key"?" TMDB says the key is not valid.":" Failed ("+e.message+"). "+HELP}};
+    d.append(t,out);b.append(d);return}
+  const n=el("div","notice");
+  n.append(el("b","","Connect the search (one time)"));
+  n.append(el("div","m","Get a free key at themoviedb.org: sign up, then Settings, API, request a key for personal use. Paste the API key here."));
+  const i=el("input");i.placeholder="Paste your TMDB API key";i.setAttribute("aria-label","TMDB API key");
+  const sv=el("button","primary","Save key");
+  sv.onclick=()=>{const v=i.value.trim();if(!v)return;tmdbKey=v;try{localStorage.setItem(TKEY,v)}catch(e){}save();keyBox();doSearch()};
+  n.append(i,sv);b.append(n);
+}
+function resultRow(m){
+  const r=el("div","res");
+  const t=m.poster?el("img","thumb"):el("div","thumb");if(m.poster){t.src=m.poster;t.alt=""}
+  const info=el("div");info.append(el("div","rt",m.title),el("div","m",[m.year,m.tmdbRating?"TMDB ★ "+m.tmdbRating:""].filter(Boolean).join(" · ")));
+  const k=el("select");getKinds().forEach(z=>k.append(opt(z.id,z.label)));k.value=m.kind;k.setAttribute("aria-label","Type");
+  const b=el("button","primary","Add");
+  const have=items.some(i=>keyOf(i)===keyOf(m));
+  if(have){b.textContent="In your list";b.disabled=true;b.className=""}
+  b.onclick=()=>{
+    merge([{...m,kind:k.value,status:$("#sStatus").value,rating:$("#sRating").value?Number($("#sRating").value):null}]);
+    save();render();b.textContent="Added ✓";b.disabled=true;b.className="";
+  };
+  r.append(t,info,k,b);return r;
+}
+let timer,seq=0;
+async function doSearch(){
+  const q=$("#sq").value.trim(),box=$("#results"),me=++seq;box.innerHTML="";
+  if(!tmdbKey||q.length<2)return;
+  box.append(el("div","m","Searching…"));
+  try{
+    const d=await tmdb("/search/multi",{query:q,include_adult:"false"});
+    if(me!==seq)return;box.innerHTML="";
+    const list=d.results.map(mapResult).filter(Boolean).slice(0,8);
+    if(!list.length){box.append(el("div","m","No results. Try another spelling, or add it by hand below."));return}
+    list.forEach(m=>box.append(resultRow(m)));
+  }catch(e){if(me!==seq)return;box.innerHTML="";
+    box.append(el("div","m",e.message==="key"?"TMDB didn't accept this key. Click Change TMDB key and paste it again.":"Couldn't reach TMDB ("+e.message+"). "+HELP))}
+}
+getStatuses().forEach(z=>$("#sStatus").append(opt(z.id,z.label)));ratingOpts($("#sRating"),"No rating");
+$("#sStatus").value="want";
+$("#sq").oninput=()=>{clearTimeout(timer);timer=setTimeout(doSearch,350)};
+const _show=$("#dlg").showModal.bind($("#dlg"));
+$("#dlg").showModal=()=>{keyBox();$("#results").innerHTML="";$("#sq").value="";_show();$("#sq").focus()};
+$("#fp").onclick=async()=>{
+  const btn=$("#fp");
+  if(!tmdbKey){$("#dlg").showModal();return}
+  const todo=items.filter(i=>!i.poster);
+  if(!todo.length){alert("All your titles already have posters.");return}
+  let n=0;
+  for(const i of todo){
+    btn.textContent="Finding posters "+(++n)+"/"+todo.length;
+    try{
+      const d=await tmdb("/search/multi",{query:i.title,include_adult:"false"});
+      const c=d.results.map(mapResult).filter(Boolean);
+      const pick=c.find(m=>i.year&&m.year===i.year&&m.poster)||c.find(m=>m.kind===i.kind&&m.poster)||c.find(m=>m.poster);
+      if(pick){i.poster=pick.poster;i.tmdbId=pick.tmdbId;i.media=pick.media;i.overview=pick.overview;i.tmdbRating=pick.tmdbRating;if(!i.year)i.year=pick.year}
+    }catch(e){if(e.message==="key"){alert("TMDB didn't accept your key.");break}}
+  }
+  save();render();btn.textContent="Find posters";
+};
+
+// ---- Letterboxd import ----
+function parseCSV(text){
+  const rows=[];let row=[],f="",q=false;text=text.replace(/^\uFEFF/,"");
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=c}
+    else if(c==='"')q=true;
+    else if(c===","){row.push(f);f=""}
+    else if(c==="\n"||c==="\r"){if(c==="\r"&&text[i+1]==="\n")i++;row.push(f);f="";if(row.length>1||row[0]!=="")rows.push(row);row=[]}
+    else f+=c;
+  }
+  if(f!==""||row.length){row.push(f);rows.push(row)}
+  if(!rows.length)return [];
+  const head=rows.shift().map(h=>h.trim().toLowerCase());
+  return rows.map(r=>Object.fromEntries(head.map((h,i)=>[h,r[i]||""])));
+}
+$("#lb").onclick=()=>$("#lbFile").click();
+async function unzip(file){
+  const buf=await file.arrayBuffer(),v=new DataView(buf),u8=new Uint8Array(buf);
+  let e=u8.length-22;while(e>=0&&v.getUint32(e,true)!==0x06054b50)e--;
+  if(e<0)throw new Error("zip");
+  const n=v.getUint16(e+10,true);let p=v.getUint32(e+16,true);const out=[];
+  for(let k=0;k<n;k++){
+    const method=v.getUint16(p+10,true),csize=v.getUint32(p+20,true),nl=v.getUint16(p+28,true),xl=v.getUint16(p+30,true),cl=v.getUint16(p+32,true),off=v.getUint32(p+42,true);
+    const name=new TextDecoder().decode(u8.subarray(p+46,p+46+nl));p+=46+nl+xl+cl;
+    if(!/\.csv$/i.test(name))continue;
+    const start=off+30+v.getUint16(off+26,true)+v.getUint16(off+28,true),data=u8.subarray(start,start+csize);
+    let text;
+    if(method===0)text=new TextDecoder().decode(data);
+    else text=await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).text();
+    out.push({name:name.split("/").pop(),text});
+  }
+  return out;
+}
+$("#lbFile").onchange=async e=>{
+  const picked=[...e.target.files];e.target.value="";
+  if(!picked.length)return;
+  const files=[];
+  try{for(const f of picked){if(/\.zip$/i.test(f.name))files.push(...await unzip(f));else files.push({name:f.name,text:await f.text()})}}
+  catch(err){alert("I couldn't read that file. Try unzipping it in Finder and choosing the .csv files.");return}
+  const order=f=>/watchlist/i.test(f.name)?0:/watched/i.test(f.name)?1:/diary/i.test(f.name)?2:/ratings/i.test(f.name)?3:9;
+  files.sort((a,b)=>order(a)-order(b));
+  const map=new Map(),used=files.filter(f=>order(f)<9).length;
+  if(!used){alert("I couldn't find Letterboxd data in that. Choose the ZIP file you downloaded from Letterboxd.");return}
+  const get=r=>{const title=(r.name||"").trim();if(!title)return null;const year=(r.year||"").trim();const k=(title+"|"+year).toLowerCase();
+    if(!map.has(k))map.set(k,{title,year,link:r["letterboxd uri"]||"",status:null,rating:null});return map.get(k)};
+  const rate=v=>{const n=parseFloat(v);return n>0?Math.round(n*2):null};
+  for(const f of files){
+    const o=order(f);if(o===9)continue;
+    parseCSV(f.text).forEach(r=>{
+      const m=get(r);if(!m)return;
+      if(o===0){if(!m.status)m.status="want"}
+      else if(o===1)m.status="seen";
+      else if(o===2){m.status="seen";if(r.rating)m.rating=rate(r.rating)||m.rating}
+      else{m.rating=rate(r.rating)||m.rating;if(!m.status)m.status="seen"}
+    });
+  }
+  let added=0,updated=0;const byKey=new Map(items.map(i=>[keyOf(i),i]));
+  map.forEach((m,k)=>{
+    const ex=byKey.get(k);
+    if(ex){if(m.status==="seen")ex.status="seen";if(m.rating&&!ex.rating)ex.rating=m.rating;if(!ex.link&&m.link)ex.link=m.link;updated++}
+    else{items.push({id:Date.now()+Math.random(),title:m.title,year:m.year,kind:"Film",status:m.status||"seen",rating:m.rating,link:m.link});added++}
+  });
+  save();render();
+  if(confirm("Letterboxd import done: "+added+" new films added, "+updated+" already in your list updated.\n\nFind posters for them now? It can take a minute.")){await $("#fp").onclick()}
+};
+
+// Pick up changes made on other devices when you come back to this tab
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&currentUser&&supabaseClient&&!saveTimer&&!pushing)loadFromSupabase()});
+window.addEventListener("online",()=>{if(currentUser&&supabaseClient)loadFromSupabase()});
+
+// Initial startup
+render();
+initAuth();
+</script>
+</body>
+</html>
