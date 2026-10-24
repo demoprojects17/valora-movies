@@ -1,5 +1,7 @@
 # Velora
 
+[გახსენი Velora / Open website](https://eclectic-cocada-2221e4.netlify.app/)
+
 Movies, anime and series tracker built with Next.js App Router and React. The app keeps the original Velora design, Georgian/English interface, local library and Supabase synchronization.
 
 ## Run locally
