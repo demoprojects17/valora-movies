@@ -1,0 +1,13 @@
+node_modules/
+.next/
+out/
+.tools/
+.env*
+!.env.example
+.DS_Store
+*.log
+.threadrig/
+test-results/
+playwright-report/
+
+.netlify/

@@ -1,0 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Netlify automatically installs its Next.js adapter for server routes.
+# Configure TMDB_API_KEY or TMDB_ACCESS_TOKEN in Netlify environment variables
+# with both Builds and Functions scopes. Never put credentials in this file.
