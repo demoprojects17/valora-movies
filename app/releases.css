@@ -754,7 +754,7 @@
   border: 1px solid #ffffff40;
   backdrop-filter: blur(8px);
 }
-.r-hero-controls button:first-child svg {
+.r-hero-controls button:nth-last-child(2) svg {
   transform: rotate(180deg);
 }
 .r-hero-controls button:disabled {

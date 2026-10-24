@@ -99,6 +99,7 @@ export default function ReleaseHome({
   const heroTrack = useRef(null),
     wheelTime = useRef(-Infinity);
   const heroDrag = useDragScroll(heroTrack);
+  const [autoplayPaused, setAutoplayPaused] = useState(false);
   function goToSlide(index) {
     const track = heroTrack.current;
     if (!track) return;
@@ -109,6 +110,75 @@ export default function ReleaseHome({
         : "smooth",
     });
   }
+  useEffect(() => {
+    const track = heroTrack.current;
+    const hero = track?.parentElement;
+    if (!hero || detail || autoplayPaused) return;
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let lastActivity = Date.now();
+    let holding = false;
+    let visible = true;
+    const activity = () => {
+      lastActivity = Date.now();
+    };
+    const down = () => {
+      holding = true;
+      activity();
+    };
+    const up = () => {
+      holding = false;
+      activity();
+    };
+    const events = [
+      "pointermove",
+      "pointerenter",
+      "pointerleave",
+      "keydown",
+      "wheel",
+      "click",
+      "focusin",
+      "focusout",
+    ];
+    events.forEach((event) =>
+      hero.addEventListener(event, activity, { passive: true }),
+    );
+    hero.addEventListener("pointerdown", down);
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
+    document.addEventListener("visibilitychange", activity);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting && entry.intersectionRatio >= 0.25;
+        activity();
+      },
+      { threshold: 0.25 },
+    );
+    observer.observe(hero);
+    const timer = window.setInterval(() => {
+      if (
+        document.hidden ||
+        !visible ||
+        holding ||
+        motion.matches ||
+        hero.querySelector(":focus-visible") ||
+        Date.now() - lastActivity < 10000
+      )
+        return;
+      const current = Math.round(track.scrollLeft / track.clientWidth);
+      goToSlide((current + 1) % features.length);
+      activity();
+    }, 250);
+    return () => {
+      clearInterval(timer);
+      observer.disconnect();
+      events.forEach((event) => hero.removeEventListener(event, activity));
+      hero.removeEventListener("pointerdown", down);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+      document.removeEventListener("visibilitychange", activity);
+    };
+  }, [detail, autoplayPaused, features.length]);
+
   useEffect(() => {
     const track = heroTrack.current;
     const wheel = (e) => {
@@ -289,6 +359,24 @@ export default function ReleaseHome({
           className="r-hero-controls"
           aria-label={w("Featured navigation", "ბანერის გადაფურცვლა")}
         >
+          <button
+            type="button"
+            aria-label={
+              autoplayPaused
+                ? w(
+                    "Resume automatic slides",
+                    "ავტომატური გადაფურცვლის გაგრძელება",
+                  )
+                : w(
+                    "Pause automatic slides",
+                    "ავტომატური გადაფურცვლის შეჩერება",
+                  )
+            }
+            aria-pressed={autoplayPaused}
+            onClick={() => setAutoplayPaused((value) => !value)}
+          >
+            <span aria-hidden="true">{autoplayPaused ? "▶" : "Ⅱ"}</span>
+          </button>
           <button
             type="button"
             aria-label={w("Previous title", "წინა სათაური")}
