@@ -666,6 +666,35 @@ export default function VeloraApp({ initialPage = "discover" }) {
       {label}
     </button>
   );
+  function changePersonalDetails(item, patch) {
+    const existing = items.find(
+      (entry) =>
+        (item.tmdbId &&
+          entry.tmdbId === item.tmdbId &&
+          entry.media === item.media) ||
+        keyOf(entry) === keyOf(item) ||
+        (item.category &&
+          entry.title.toLowerCase() === item.title.toLowerCase()),
+    );
+    if (existing) updateItem(existing.id, patch);
+    else
+      addItems([
+        {
+          ...item,
+          kind:
+            item.kind ||
+            (item.category === "anime"
+              ? "Anime"
+              : item.category === "series" || item.media === "tv"
+                ? "Series"
+                : "Film"),
+          status: "want",
+          rating: null,
+          overview: item.overview || item.description || "",
+          ...patch,
+        },
+      ]);
+  }
   const accountPanel = (
     <CabinetProfile
       showSettings={settings}
@@ -974,6 +1003,7 @@ export default function VeloraApp({ initialPage = "discover" }) {
                 {search.trim().length < 2 && (
                   <ReleaseHome
                     onTrailer={playTrailer}
+                    onPersonalChange={changePersonalDetails}
                     onCollection={() => openCabinet("library")}
                     onUpdate={(id, patch) => {
                       updateItem(id, patch);
@@ -1344,6 +1374,10 @@ export default function VeloraApp({ initialPage = "discover" }) {
       {detailItem && (
         <TitleDetails
           item={detailItem}
+          personalItem={items.find(
+            (entry) => keyOf(entry) === keyOf(detailItem),
+          )}
+          onPersonalChange={changePersonalDetails}
           lang={lang}
           onClose={() => setDetailItem(null)}
           actions={

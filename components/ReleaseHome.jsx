@@ -12,6 +12,7 @@ export default function ReleaseHome({
   onUpdate,
   onCollection,
   onTrailer,
+  onPersonalChange,
   lang,
   category,
   setCategory,
@@ -736,6 +737,10 @@ export default function ReleaseHome({
       {detail && (
         <TitleDetails
           item={detail}
+          personalItem={items.find(
+            (entry) => entry.title.toLowerCase() === detail.title.toLowerCase(),
+          )}
+          onPersonalChange={onPersonalChange}
           lang={lang}
           onClose={() => setDetail(null)}
           actions={
