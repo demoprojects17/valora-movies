@@ -116,9 +116,11 @@ export default function ReleaseHome({
     if (!hero || detail || autoplayPaused) return;
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let lastActivity = Date.now();
+    let delay = 2500;
     let holding = false;
     let visible = true;
     const activity = () => {
+      delay = 10000;
       lastActivity = Date.now();
     };
     const down = () => {
@@ -149,7 +151,7 @@ export default function ReleaseHome({
     const observer = new IntersectionObserver(
       ([entry]) => {
         visible = entry.isIntersecting && entry.intersectionRatio >= 0.25;
-        activity();
+        lastActivity = Date.now();
       },
       { threshold: 0.25 },
     );
@@ -161,12 +163,13 @@ export default function ReleaseHome({
         holding ||
         motion.matches ||
         hero.querySelector(":focus-visible") ||
-        Date.now() - lastActivity < 10000
+        Date.now() - lastActivity < delay
       )
         return;
       const current = Math.round(track.scrollLeft / track.clientWidth);
       goToSlide((current + 1) % features.length);
-      activity();
+      delay = 2500;
+      lastActivity = Date.now();
     }, 250);
     return () => {
       clearInterval(timer);
