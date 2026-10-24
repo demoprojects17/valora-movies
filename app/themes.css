@@ -635,3 +635,19 @@ html[data-theme="night"] .p-sync-status.synced {
     transition: none;
   }
 }
+
+.app .auth-area .settings-toggle {
+  text-decoration: none;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease;
+}
+.app .auth-area .settings-toggle:hover,
+.app .auth-area .settings-toggle[aria-current="page"] {
+  background: var(--line);
+  border-color: var(--mute);
+}
+.app .auth-area .settings-toggle:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 3px;
+}

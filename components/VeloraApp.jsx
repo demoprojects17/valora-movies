@@ -255,6 +255,7 @@ function Result({ item, kinds, have, onAdd, words, onDetails }) {
 export default function VeloraApp({ initialPage = "discover" }) {
   const router = useRouter();
   const discover = initialPage === "discover";
+  const settings = initialPage === "settings";
   const [detailItem, setDetailItem] = useState(null);
   const [theme, setTheme] = useState("night");
   useEffect(() => {
@@ -475,9 +476,14 @@ export default function VeloraApp({ initialPage = "discover" }) {
           setReleaseCategory(hash);
           setSearch("");
         }
-      } else if (["watchlist", "history", "library"].includes(hash)) {
+      } else if (
+        ["watchlist", "history", "library", "Film", "Anime", "Series"].includes(
+          hash,
+        )
+      ) {
         setView(
-          { watchlist: "want", history: "done", library: "library" }[hash],
+          { watchlist: "want", history: "done", library: "library" }[hash] ||
+            hash,
         );
         setFilter("all");
         setQuery("");
@@ -491,7 +497,7 @@ export default function VeloraApp({ initialPage = "discover" }) {
     const hash = { want: "watchlist", done: "history", library: "library" }[
       next
     ];
-    if (discover) router.push("/cabinet#" + hash);
+    if (discover || settings) router.push("/cabinet#" + hash);
     else {
       navigate(next);
       window.history.replaceState(window.history.state, "", "/cabinet#" + hash);
@@ -506,6 +512,13 @@ export default function VeloraApp({ initialPage = "discover" }) {
     } else router.push("/" + (next ? "#" + next : ""));
   }
   const navigate = (next, f = "all") => {
+    if (settings) {
+      router.push(
+        "/cabinet#" + ({ want: "watchlist", done: "history" }[next] || next),
+      );
+      return;
+    }
+
     setView(next);
     setFilter(f);
     setQuery("");
@@ -655,6 +668,7 @@ export default function VeloraApp({ initialPage = "discover" }) {
   );
   const accountPanel = (
     <CabinetProfile
+      showSettings={settings}
       user={user}
       items={items}
       lang={lang}
@@ -748,8 +762,8 @@ export default function VeloraApp({ initialPage = "discover" }) {
                 </button>
               ))}
             <Link
-              className={!discover ? "nav on" : "nav"}
-              aria-current={!discover ? "page" : undefined}
+              className={!discover && !settings ? "nav on" : "nav"}
+              aria-current={!discover && !settings ? "page" : undefined}
               href="/cabinet"
             >
               <Icon name="settings" />
@@ -880,6 +894,15 @@ export default function VeloraApp({ initialPage = "discover" }) {
             </button>
             <div id="authArea" className="auth-area">
               {themeButton}
+              <Link
+                href="/settings"
+                className="theme-toggle settings-toggle"
+                aria-label={w("Settings", "პარამეტრები")}
+                title={w("Settings", "პარამეტრები")}
+                aria-current={settings ? "page" : undefined}
+              >
+                <Icon name="settings" />
+              </Link>
               {user ? (
                 <button
                   type="button"
@@ -913,17 +936,19 @@ export default function VeloraApp({ initialPage = "discover" }) {
           <div className="page-heading">
             <div>
               <h1>
-                {discover
-                  ? t("discoverTitle")
-                  : q
-                    ? w("Search results", "ძიების შედეგები")
-                    : view === "library"
-                      ? t("cabinet")
-                      : view === "want"
-                        ? t("watchlist")
-                        : view === "done"
-                          ? t("history")
-                          : kinds.find((k) => k.id === view)?.label}
+                {settings
+                  ? w("Settings", "პარამეტრები")
+                  : discover
+                    ? t("discoverTitle")
+                    : q
+                      ? w("Search results", "ძიების შედეგები")
+                      : view === "library"
+                        ? t("cabinet")
+                        : view === "want"
+                          ? t("watchlist")
+                          : view === "done"
+                            ? t("history")
+                            : kinds.find((k) => k.id === view)?.label}
               </h1>
               <p>
                 {w(
@@ -944,7 +969,7 @@ export default function VeloraApp({ initialPage = "discover" }) {
           </div>
           {!discover && accountPanel}
           <div id="view" aria-busy={!ready}>
-            {discover ? (
+            {settings ? null : discover ? (
               <section className="catalog-view">
                 {search.trim().length < 2 && (
                   <ReleaseHome

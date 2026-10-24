@@ -6,6 +6,7 @@ import AvatarCropper from "./AvatarCropper";
 import { normalizeAvatar } from "../lib/avatar";
 
 export default function CabinetProfile({
+  showSettings = false,
   user,
   items,
   lang,
@@ -166,212 +167,219 @@ export default function CabinetProfile({
           </div>
         ))}
       </div>
-      <div className="p-columns">
-        <div>
-          <section className="p-panel">
-            <div className="p-panel-head">
-              <h2>
-                <Icon name="settings" size={17} />
-                {w("Personal information", "პირადი ინფორმაცია")}
-              </h2>
-              <button
-                className="link"
-                disabled={!user}
-                onClick={() => {
-                  setDraft(name);
-                  setError("");
-                  setEdit(true);
-                }}
-              >
-                {w("Edit", "რედაქტირება")} <Icon name="arrow" size={13} />
-              </button>
-            </div>
-            <div className="p-row">
-              <span>{w("Name", "სახელი")}</span>
-              <strong>{name}</strong>
-            </div>
-            <div className="p-row">
-              <span>{w("Email", "ელფოსტა")}</span>
-              <strong>{user?.email || "–"}</strong>
-            </div>
-            <div className="p-row">
-              <span>{w("Password", "პაროლი")}</span>
-              <button className="link" disabled={!user} onClick={onReset}>
-                {w("Reset password", "პაროლის აღდგენა")}{" "}
-                <Icon name="arrow" size={13} />
-              </button>
-            </div>
-            {!user && (
-              <button className="primary" onClick={onSignIn}>
-                {w(
-                  "Sign in to sync your library",
-                  "შედი ანგარიშში ბიბლიოთეკის სინქრონიზაციისთვის",
-                )}
-              </button>
-            )}
-          </section>
-          <section className="p-panel">
-            <div className="p-panel-head">
-              <h2>
-                <Icon name="grid" size={17} />
-                {w("Settings", "პარამეტრები")}
-              </h2>
-            </div>
-            <div className="p-row">
-              <div>
-                {w("Interface language", "ინტერფეისის ენა")}
-                <p>
-                  {w(
-                    "Choose your preferred language",
-                    "აირჩიე შენთვის მოსახერხებელი ენა",
-                  )}
-                </p>
-              </div>
-              <div
-                className="p-language"
-                role="group"
-                aria-label={w("Interface language", "ინტერფეისის ენა")}
-              >
-                {["ka", "en"].map((l) => (
+      {showSettings && (
+        <>
+          <div className="p-columns">
+            <div>
+              <section className="p-panel">
+                <div className="p-panel-head">
+                  <h2>
+                    <Icon name="settings" size={17} />
+                    {w("Personal information", "პირადი ინფორმაცია")}
+                  </h2>
                   <button
-                    key={l}
-                    aria-pressed={lang === l}
-                    className={lang === l ? "active" : ""}
-                    onClick={() => onLanguage(l)}
+                    className="link"
+                    disabled={!user}
+                    onClick={() => {
+                      setDraft(name);
+                      setError("");
+                      setEdit(true);
+                    }}
                   >
-                    {l === "ka" ? "ქარ" : "EN"}
+                    {w("Edit", "რედაქტირება")} <Icon name="arrow" size={13} />
                   </button>
-                ))}
-              </div>
-            </div>
-            <div className="p-row">
-              <div>
-                {w("Backup", "სარეზერვო ასლი")}
-                <p>
-                  {w(
-                    "Download your collection as JSON",
-                    "ჩამოტვირთე შენი კოლექცია JSON ფორმატში",
-                  )}
-                </p>
-              </div>
-              <button className="profile-button" onClick={exportBackup}>
-                {w("Export", "ექსპორტი")}
-                <Icon name="arrow" size={13} />
-              </button>
-            </div>
-            <div className="p-row">
-              <span>{w("Import collections", "კოლექციის იმპორტი")}</span>
-              <div className="profile-imports">{actions}</div>
-            </div>
-          </section>
-        </div>
-        <div>
-          <section className="p-panel">
-            <div className="p-panel-head">
-              <h2>
-                <Icon name="check" size={17} />
-                {w("Synchronization", "სინქრონიზაცია")}
-              </h2>
-              <span
-                id="profStatus"
-                className={`p-sync-status ${syncState === "err" ? "error" : ""}`}
-              >
-                {syncLabel}
-              </span>
-            </div>
-            <p className="p-sync-text">
-              {w(
-                "Your movies, ratings and episode progress stay with you across devices.",
-                "შენი ბიბლიოთეკა შენთანაა — ფილმები, შეფასებები და სერიების პროგრესი ყველა მოწყობილობაზე.",
-              )}
-            </p>
-            <div className="p-row">
-              <span>{w("Saved titles", "შენახული სათაურები")}</span>
-              <strong id="profCount">{items.length}</strong>
-            </div>
-            <div className="p-device">
-              <strong>
-                {w(
-                  "Continue on another device",
-                  "გააგრძელე სხვა მოწყობილობაზე",
-                )}
-              </strong>
-              <p>
-                {w(
-                  "Open Velora on your phone or another browser and sign in with the same email.",
-                  "გახსენი Velora ტელეფონზე ან სხვა ბრაუზერში და შედი იმავე ელფოსტით. შენი კოლექცია ავტომატურად გამოჩნდება.",
-                )}
-              </p>
-            </div>
-            <button
-              id="profSyncBtn"
-              className="profile-button"
-              style={{ width: "100%" }}
-              disabled={!user || syncState === "saving"}
-              onClick={sync}
-            >
-              <Icon name="check" size={14} />
-              {w("Sync again", "ხელახლა სინქრონიზაცია")}
-            </button>
-          </section>
-          <section className="p-panel">
-            <div className="p-panel-head">
-              <h2>
-                <Icon name="clock" size={17} />
-                {w("Recently added", "ბოლოს დამატებული")}
-              </h2>
-            </div>
-            {items
-              .slice(-3)
-              .reverse()
-              .map((i) => (
-                <div className="p-activity" key={i.id}>
-                  <div className="p-thumb">
-                    {i.poster ? (
-                      <img src={i.poster} alt="" loading="lazy" />
-                    ) : (
-                      <Icon name="film" />
+                </div>
+                <div className="p-row">
+                  <span>{w("Name", "სახელი")}</span>
+                  <strong>{name}</strong>
+                </div>
+                <div className="p-row">
+                  <span>{w("Email", "ელფოსტა")}</span>
+                  <strong>{user?.email || "–"}</strong>
+                </div>
+                <div className="p-row">
+                  <span>{w("Password", "პაროლი")}</span>
+                  <button className="link" disabled={!user} onClick={onReset}>
+                    {w("Reset password", "პაროლის აღდგენა")}{" "}
+                    <Icon name="arrow" size={13} />
+                  </button>
+                </div>
+                {!user && (
+                  <button className="primary" onClick={onSignIn}>
+                    {w(
+                      "Sign in to sync your library",
+                      "შედი ანგარიშში ბიბლიოთეკის სინქრონიზაციისთვის",
                     )}
-                  </div>
-                  <div className="p-activity-title">
-                    {i.title}
+                  </button>
+                )}
+              </section>
+              <section className="p-panel">
+                <div className="p-panel-head">
+                  <h2>
+                    <Icon name="grid" size={17} />
+                    {w("Settings", "პარამეტრები")}
+                  </h2>
+                </div>
+                <div className="p-row">
+                  <div>
+                    {w("Interface language", "ინტერფეისის ენა")}
                     <p>
-                      {i.kind === "Film"
-                        ? w("Movie", "ფილმი")
-                        : w("Season", "სეზონი") +
-                          " " +
-                          (i.season || 1) +
-                          " · " +
-                          w("Episode", "სერია") +
-                          " " +
-                          (i.episode ?? 1)}
-                      {i.rating ? ` · ★ ${i.rating}/10` : ""}
+                      {w(
+                        "Choose your preferred language",
+                        "აირჩიე შენთვის მოსახერხებელი ენა",
+                      )}
                     </p>
                   </div>
+                  <div
+                    className="p-language"
+                    role="group"
+                    aria-label={w("Interface language", "ინტერფეისის ენა")}
+                  >
+                    {["ka", "en"].map((l) => (
+                      <button
+                        key={l}
+                        aria-pressed={lang === l}
+                        className={lang === l ? "active" : ""}
+                        onClick={() => onLanguage(l)}
+                      >
+                        {l === "ka" ? "ქარ" : "EN"}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            {!items.length && (
-              <p className="p-sync-text">
-                {w("Your collection is empty.", "შენი კოლექცია ჯერ ცარიელია.")}
-              </p>
-            )}
-          </section>
-        </div>
-      </div>
-      <div className="p-account-footer">
-        <p>
-          {w("Your collection is personal.", "შენი კოლექცია პერსონალურია.")}
-        </p>
-        <button
-          id="profLogoutBtn"
-          disabled={!user}
-          className="profile-button p-logout"
-          onClick={onLogout}
-        >
-          {w("Log out", "ანგარიშიდან გამოსვლა")}
-          <Icon name="arrow" size={14} />
-        </button>
-      </div>
+                <div className="p-row">
+                  <div>
+                    {w("Backup", "სარეზერვო ასლი")}
+                    <p>
+                      {w(
+                        "Download your collection as JSON",
+                        "ჩამოტვირთე შენი კოლექცია JSON ფორმატში",
+                      )}
+                    </p>
+                  </div>
+                  <button className="profile-button" onClick={exportBackup}>
+                    {w("Export", "ექსპორტი")}
+                    <Icon name="arrow" size={13} />
+                  </button>
+                </div>
+                <div className="p-row">
+                  <span>{w("Import collections", "კოლექციის იმპორტი")}</span>
+                  <div className="profile-imports">{actions}</div>
+                </div>
+              </section>
+            </div>
+            <div>
+              <section className="p-panel">
+                <div className="p-panel-head">
+                  <h2>
+                    <Icon name="check" size={17} />
+                    {w("Synchronization", "სინქრონიზაცია")}
+                  </h2>
+                  <span
+                    id="profStatus"
+                    className={`p-sync-status ${syncState === "err" ? "error" : ""}`}
+                  >
+                    {syncLabel}
+                  </span>
+                </div>
+                <p className="p-sync-text">
+                  {w(
+                    "Your movies, ratings and episode progress stay with you across devices.",
+                    "შენი ბიბლიოთეკა შენთანაა — ფილმები, შეფასებები და სერიების პროგრესი ყველა მოწყობილობაზე.",
+                  )}
+                </p>
+                <div className="p-row">
+                  <span>{w("Saved titles", "შენახული სათაურები")}</span>
+                  <strong id="profCount">{items.length}</strong>
+                </div>
+                <div className="p-device">
+                  <strong>
+                    {w(
+                      "Continue on another device",
+                      "გააგრძელე სხვა მოწყობილობაზე",
+                    )}
+                  </strong>
+                  <p>
+                    {w(
+                      "Open Velora on your phone or another browser and sign in with the same email.",
+                      "გახსენი Velora ტელეფონზე ან სხვა ბრაუზერში და შედი იმავე ელფოსტით. შენი კოლექცია ავტომატურად გამოჩნდება.",
+                    )}
+                  </p>
+                </div>
+                <button
+                  id="profSyncBtn"
+                  className="profile-button"
+                  style={{ width: "100%" }}
+                  disabled={!user || syncState === "saving"}
+                  onClick={sync}
+                >
+                  <Icon name="check" size={14} />
+                  {w("Sync again", "ხელახლა სინქრონიზაცია")}
+                </button>
+              </section>
+              <section className="p-panel">
+                <div className="p-panel-head">
+                  <h2>
+                    <Icon name="clock" size={17} />
+                    {w("Recently added", "ბოლოს დამატებული")}
+                  </h2>
+                </div>
+                {items
+                  .slice(-3)
+                  .reverse()
+                  .map((i) => (
+                    <div className="p-activity" key={i.id}>
+                      <div className="p-thumb">
+                        {i.poster ? (
+                          <img src={i.poster} alt="" loading="lazy" />
+                        ) : (
+                          <Icon name="film" />
+                        )}
+                      </div>
+                      <div className="p-activity-title">
+                        {i.title}
+                        <p>
+                          {i.kind === "Film"
+                            ? w("Movie", "ფილმი")
+                            : w("Season", "სეზონი") +
+                              " " +
+                              (i.season || 1) +
+                              " · " +
+                              w("Episode", "სერია") +
+                              " " +
+                              (i.episode ?? 1)}
+                          {i.rating ? ` · ★ ${i.rating}/10` : ""}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                {!items.length && (
+                  <p className="p-sync-text">
+                    {w(
+                      "Your collection is empty.",
+                      "შენი კოლექცია ჯერ ცარიელია.",
+                    )}
+                  </p>
+                )}
+              </section>
+            </div>
+          </div>
+          <div className="p-account-footer">
+            <p>
+              {w("Your collection is personal.", "შენი კოლექცია პერსონალურია.")}
+            </p>
+            <button
+              id="profLogoutBtn"
+              disabled={!user}
+              className="profile-button p-logout"
+              onClick={onLogout}
+            >
+              {w("Log out", "ანგარიშიდან გამოსვლა")}
+              <Icon name="arrow" size={14} />
+            </button>
+          </div>
+        </>
+      )}
       {cropFile && (
         <AvatarCropper
           file={cropFile}
