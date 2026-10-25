@@ -1,12 +1,14 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon";
+import SettingsOverview from "./SettingsOverview";
 import ProfileAvatar from "./ProfileAvatar";
 import AvatarCropper from "./AvatarCropper";
 import { normalizeAvatar } from "../lib/avatar";
 
 export default function CabinetProfile({
   showSettings = false,
+  onUpdate,
   user,
   items,
   lang,
@@ -79,14 +81,17 @@ export default function CabinetProfile({
   return (
     <section
       id="profileDlg"
+      className={showSettings ? "settings-profile" : undefined}
       aria-label={w("Personal cabinet", "პირადი კაბინეტი")}
     >
-      <div className="p-cover">
+      {!showSettings && <div className="p-cover">
         <div className="profile-art" />
         <span className="p-cover-caption">
           {w("Your personal story space", "შენი ამბების პირადი სივრცე")}
         </span>
-      </div>
+      </div>}
+      <div className={showSettings ? "c-hero" : undefined}><div className={showSettings ? "c-hero-copy" : undefined}>
+      {showSettings && <span className="c-eyebrow">{w("Your personal movie journal", "შენი პირადი კინოჟურნალი")}</span>}
       <div className="p-identity">
         <div className="profile-photo-control">
           <button
@@ -149,6 +154,8 @@ export default function CabinetProfile({
           {w("Personal collection", "პირადი კოლექცია")}
         </div>
       </div>
+      {showSettings && <><p className="c-hero-intro">{w("Good stories stay with you. Keep them all in one place.", "კარგი ისტორიები გრჩება. შეინახე ყველა მათგანი ერთ სივრცეში.")}</p><button className="c-edit" onClick={() => { if (!user) return onSignIn(); setDraft(name); setError(""); setEdit(true); }}><Icon name="settings" size={15}/>{w("Edit profile", "პროფილის რედაქტირება")}</button><span className="c-member-since">VELORA · {user?.created_at ? new Date(user.created_at).getFullYear() : w("LOCAL COLLECTION", "ადგილობრივი კოლექცია")}</span></>}
+      </div>{showSettings && <div className="c-hero-art" aria-hidden="true">{["resident-evil.jpg", "animals.jpg", "sasaki.jpg"].map((poster, index) => <div key={poster} className={`c-poster c-poster-${["one","two","three"][index]}`}><img src={`/assets/releases/${poster}`} alt=""/></div>)}</div>}</div>
       {photoError && (
         <p className="avatar-error" role="alert">
           {photoError}
@@ -169,6 +176,8 @@ export default function CabinetProfile({
       </div>
       {showSettings && (
         <>
+          <SettingsOverview items={items} lang={lang} onUpdate={onUpdate}/>
+          <div className="c-settings-heading" id="cabinet-settings"><span className="c-eyebrow">{w("Everything under your control", "ყველაფერი შენს კონტროლშია")}</span><h2>{w("Account and settings", "ანგარიში და პარამეტრები")}</h2></div>
           <div className="p-columns">
             <div>
               <section className="p-panel">

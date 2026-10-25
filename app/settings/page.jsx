@@ -1,3 +1,4 @@
+import "../settings.css";
 import VeloraApp from "../../components/VeloraApp";
 
 export default function SettingsPage() {

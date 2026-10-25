@@ -698,6 +698,7 @@ export default function VeloraApp({ initialPage = "discover" }) {
   const accountPanel = (
     <CabinetProfile
       showSettings={settings}
+      onUpdate={updateItem}
       user={user}
       items={items}
       lang={lang}

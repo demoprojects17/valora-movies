@@ -1,0 +1,19 @@
+import Link from "next/link";
+import Icon from "./Icon";
+
+export default function SettingsOverview({ items, lang, onUpdate }) {
+  const w = (en, ka) => lang === "ka" ? ka : en;
+  const watching = items.find(item => item.status === "watching" && item.kind !== "Film");
+  const next = items.filter(item => item.status === "want").slice(0, 3);
+  const types = [["Film", w("Movies", "ფილმები")], ["Series", w("Series", "სერიალები")], ["Anime", w("Anime", "ანიმე")]];
+  return <section className="c-dashboard">
+    <div className="c-overview-head"><div><span className="c-eyebrow">{w("Your collection at a glance", "შენი კოლექციის მოკლე ამბავი")}</span><h2>{w("Your movie evenings", "შენი კინოსაღამოები")}</h2></div><a className="link" href="#cabinet-settings">{w("Settings", "პარამეტრები")} <Icon name="settings" size={15}/></a></div>
+    <div className="c-overview-grid">
+      <section className="c-feature-panel"><div className="c-panel-header"><h3>{w("Where you left off", "იქ, სადაც გაჩერდი")}</h3><span>{w("Currently watching", "მიმდინარე ყურება")}</span></div>
+        {watching ? <><div className="c-watching-art">{watching.poster && <img src={watching.poster} alt=""/>}<div className="c-watching-shade"/><div className="c-watching-title"><span>{watching.kind === "Anime" ? w("Anime", "ანიმე") : w("Series", "სერიალი")}</span><h3>{watching.title}</h3><p>{w("Season", "სეზონი")} {watching.season || 1} · {w("Episode", "სერია")} {watching.episode || 1}</p></div><button className="c-next" aria-label={w("Mark next episode", "შემდეგი სერიის მონიშვნა")} onClick={()=>onUpdate(watching.id,{episode:(Number(watching.episode)||1)+1})}><Icon name="check" size={21}/></button></div><div className="c-watch-bottom"><span>{w("Continue at your own pace", "გააგრძელე შენი ტემპით")}</span><Link className="link" href="/cabinet">{w("Collection", "კოლექცია")} <Icon name="arrow" size={13}/></Link></div></> : <div className="c-empty"><Icon name="tv" size={32}/><p>{w("Mark a series or anime as Watching to continue here.", "სერიალს ან ანიმეს მიუთითე „ვუყურებ“ და აქ გააგრძელე.")}</p><Link className="link" href="/cabinet">{w("Open collection", "კოლექციის გახსნა")} <Icon name="arrow" size={14}/></Link></div>}
+      </section>
+      <section className="c-taste"><div className="c-panel-header"><h3>{w("Your movie taste", "შენი კინოგემოვნება")}</h3><Icon name="spark" size={17}/></div><p className="c-taste-intro">{w("In your collection", "შენს კოლექციაში")}</p>{types.map(([kind,label],index)=>{const count=items.filter(i=>i.kind===kind).length;const percent=items.length?Math.round(count/items.length*100):0;return <div className="c-genre" key={kind}><div><span>{label}</span><strong>{percent}%</strong></div><div className="c-genre-track"><span style={{width:`${percent}%`,opacity:1-index*.2}}/></div></div>})}<div className="c-taste-foot"><span>{w("Based on your saved titles", "შენახული სათაურების მიხედვით")}</span><Icon name="film" size={15}/></div></section>
+    </div>
+    <section className="c-shelf"><div className="c-panel-header"><h3>{w("For your next movie evening", "შემდეგი კინოსაღამოსთვის")}</h3><Link className="link" href="/cabinet#watchlist">{w("Watchlist", "სანახავი სია")} <Icon name="arrow" size={14}/></Link></div>{next.length ? <div className="c-shelf-row">{next.map(item=><Link href="/cabinet#watchlist" className="c-shelf-item" key={item.id}>{item.poster ? <img src={item.poster} alt="" loading="lazy"/> : <Icon name="film" size={30}/>}<div><strong>{item.title}</strong><span>{types.find(([kind])=>kind===item.kind)?.[1]}{item.year ? ` · ${item.year}` : ""}</span></div><Icon name="arrow" size={16}/></Link>)}</div> : <p className="c-shelf-note">{w("Save titles to your watchlist and find them here.", "დაამატე სათაურები სანახავ სიაში და აქ გამოჩნდება.")}</p>}</section>
+  </section>;
+}
