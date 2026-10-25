@@ -308,7 +308,6 @@ export default function VeloraApp({ initialPage = "discover" }) {
     importLetterboxd,
     exportBackup,
     findPosters,
-    posterProgress,
     toast,
     setToast,
   } = data;
@@ -801,13 +800,7 @@ export default function VeloraApp({ initialPage = "discover" }) {
             {!discover && navButton("done", t("history"))}
           </div>
           <div className="sp" />
-          <div className="side-tools" hidden={discover}>
-            <button id="exp" onClick={exportBackup}>
-              {t("exportBackup")}
-            </button>
-            <button id="lb" onClick={() => lbRef.current?.click()}>
-              {t("importLetterboxd")}
-            </button>
+          <>
             <input
               id="lbFile"
               ref={lbRef}
@@ -834,18 +827,6 @@ export default function VeloraApp({ initialPage = "discover" }) {
                 }
               }}
             />
-            <button
-              id="fp"
-              disabled={Boolean(posterProgress)}
-              onClick={posters}
-            >
-              {posterProgress
-                ? `${t("findPosters")} ${posterProgress.current ?? posterProgress.done ?? ""}/${posterProgress.total ?? ""}`
-                : t("findPosters")}
-            </button>
-            <button id="imp" onClick={() => fileRef.current?.click()}>
-              {t("importBackup")}
-            </button>
             <input
               id="file"
               ref={fileRef}
@@ -874,8 +855,7 @@ export default function VeloraApp({ initialPage = "discover" }) {
                 }
               }}
             />
-            <small id="storageNote">{t("storageNote")}</small>
-          </div>
+          </>
         </aside>
         <main>
           <div className="top">
