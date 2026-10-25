@@ -105,3 +105,27 @@ test("crop exports JPEG for browsers without WebP canvas encoding", async (t) =>
     else globalThis.document = previousDocument;
   }
 });
+
+test("cover export preserves wide aspect ratio and fits the storage limit", async (t) => {
+  const { prepareCover } = await import("../lib/avatar.js");
+  const previousImage = globalThis.Image, previousDocument = globalThis.document;
+  let attempts = 0;
+  const canvas = { getContext: () => ({ fillRect() {}, drawImage() {} }), toBlob(callback, type) { attempts++; callback(new Blob([new Uint8Array(attempts === 1 ? 1024 * 1024 + 1 : 100)], { type })); } };
+  globalThis.Image = class { naturalWidth = 4000; naturalHeight = 1000; async decode() {} };
+  globalThis.document = { createElement: () => canvas };
+  let revoked = false;
+  t.mock.method(URL, "createObjectURL", () => "blob:cover");
+  t.mock.method(URL, "revokeObjectURL", () => { revoked = true; });
+  try {
+    const blob = await prepareCover({ type: "image/jpeg", size: 1000 });
+    assert.equal(canvas.width, 1920);
+    assert.equal(canvas.height, 480);
+    assert.equal(blob.type, "image/jpeg");
+    assert.ok(blob.size <= 1024 * 1024);
+    assert.equal(attempts, 2);
+    assert.equal(revoked, true);
+  } finally {
+    if (previousImage === undefined) delete globalThis.Image; else globalThis.Image = previousImage;
+    if (previousDocument === undefined) delete globalThis.document; else globalThis.document = previousDocument;
+  }
+});

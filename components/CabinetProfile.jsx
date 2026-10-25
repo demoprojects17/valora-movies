@@ -17,6 +17,7 @@ export default function CabinetProfile({
   sync,
   updateProfile,
   uploadAvatar,
+  uploadCover,
   onLogout,
   exportBackup,
   onImport,
@@ -38,6 +39,8 @@ export default function CabinetProfile({
     [error, setError] = useState("");
   const editDialog = useRef(null);
   const photoInput = useRef(null);
+  const coverInput = useRef(null);
+  const [coverBusy, setCoverBusy] = useState(false);
   const [photoBusy, setPhotoBusy] = useState(false);
   const [photoError, setPhotoError] = useState("");
   const [cropFile, setCropFile] = useState(null);
@@ -85,7 +88,8 @@ export default function CabinetProfile({
       aria-label={w("Personal cabinet", "პირადი კაბინეტი")}
     >
       {!showSettings && <div className="p-cover">
-        <div className="profile-art" />
+        {user?.user_metadata?.cover_url ? <img className="profile-cover-image" src={user.user_metadata.cover_url} alt=""/> : <div className="profile-art" />}
+        <button className="profile-cover-change" disabled={coverBusy} onClick={() => user ? coverInput.current?.click() : onSignIn()}><Icon name="plus" size={16}/>{coverBusy ? w("Uploading…", "იტვირთება…") : w("Change cover photo", "ბანერის ფოტოს შეცვლა")}</button>
         <span className="p-cover-caption">
           {w("Your personal story space", "შენი ამბების პირადი სივრცე")}
         </span>
@@ -156,6 +160,7 @@ export default function CabinetProfile({
       </div>
       {showSettings && <><p className="c-hero-intro">{w("Good stories stay with you. Keep them all in one place.", "კარგი ისტორიები გრჩება. შეინახე ყველა მათგანი ერთ სივრცეში.")}</p><button className="c-edit" onClick={() => { if (!user) return onSignIn(); setDraft(name); setError(""); setEdit(true); }}><Icon name="settings" size={15}/>{w("Edit profile", "პროფილის რედაქტირება")}</button><span className="c-member-since">VELORA · {user?.created_at ? new Date(user.created_at).getFullYear() : w("LOCAL COLLECTION", "ადგილობრივი კოლექცია")}</span></>}
       </div>{showSettings && <div className="c-hero-art" aria-hidden="true">{["resident-evil.jpg", "animals.jpg", "sasaki.jpg"].map((poster, index) => <div key={poster} className={`c-poster c-poster-${["one","two","three"][index]}`}><img src={`/assets/releases/${poster}`} alt=""/></div>)}</div>}</div>
+      <input ref={coverInput} type="file" hidden accept="image/jpeg,image/png,image/webp,image/gif,image/bmp,image/avif,image/heic,image/heif,.heic,.heif" aria-label={w("Cover photo", "ბანერის ფოტო")} onChange={async (event) => { const file = event.target.files?.[0]; event.target.value = ""; if (!file) return; setPhotoError(""); setCoverBusy(true); try { await uploadCover(await normalizeAvatar(file)); } catch (error) { setPhotoError(error.message); } finally { setCoverBusy(false); } }}/>
       {photoError && (
         <p className="avatar-error" role="alert">
           {photoError}

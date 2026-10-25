@@ -707,6 +707,7 @@ export default function VeloraApp({ initialPage = "discover" }) {
       sync={sync}
       updateProfile={data.updateProfile}
       uploadAvatar={data.uploadAvatar}
+      uploadCover={data.uploadCover}
       onLogout={signOut}
       exportBackup={exportBackup}
       onImport={() => fileRef.current?.click()}
