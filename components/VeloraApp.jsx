@@ -462,12 +462,6 @@ export default function VeloraApp({ initialPage = "discover" }) {
     trailerSeq.current++;
     setTrailer(null);
   };
-  const openAdd = () => {
-    setSearch("");
-    setResults([]);
-    setModal("add");
-    setTimeout(() => searchRef.current?.focus(), 0);
-  };
   useEffect(() => {
     const readHash = () => {
       const hash = window.location.hash.slice(1);
@@ -903,11 +897,6 @@ export default function VeloraApp({ initialPage = "discover" }) {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
-            )}
-            {!discover && (
-              <button className="primary" id="openAdd" onClick={openAdd}>
-                {t("addTitle")}
-              </button>
             )}
             <button
               id="langBtn"

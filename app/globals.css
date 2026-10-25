@@ -751,9 +751,6 @@ dialog summary {
     max-width: 100%;
     width: 100%;
   }
-  #openAdd {
-    order: 2;
-  }
   .lang-btn {
     order: 3;
   }

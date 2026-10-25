@@ -382,19 +382,6 @@
     content: "👤";
     font-size: 18px;
   }
-  .app #openAdd {
-    width: 46px;
-    height: 46px;
-    font-size: 0;
-    padding: 0;
-    order: 0;
-    border-radius: 12px;
-    flex-shrink: 0;
-  }
-  .app #openAdd:before {
-    content: "+";
-    font-size: 23px;
-  }
   .app .page-heading > .m {
     display: none;
   }
