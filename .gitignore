@@ -14,3 +14,5 @@ playwright-report/
 /dist/
 .vinext/
 .wrangler/
+
+.dev.vars*

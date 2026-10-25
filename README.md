@@ -1,6 +1,6 @@
 # Velora
 
-[გახსენი Velora / Open website](https://eclectic-cocada-2221e4.netlify.app/)
+[გახსენი Velora / Open website](https://velora.demurigegia0.workers.dev/)
 
 Movies, anime and series tracker built with Next.js App Router and React. The app keeps the original Velora design, Georgian/English interface, local library and Supabase synchronization.
 
@@ -49,7 +49,14 @@ Run checks with `npm test` and `npm run build`.
 
 ## Deploy
 
-Import this repository into a Next.js hosting provider such as Vercel. Use the repository root as the project root, `npm run build` as the build command, and the Next.js preset. This repository contains a Node.js Next.js app; GitHub Pages does not run its server.
+The production site runs on Cloudflare Workers & Pages with vinext, preserving the server-side `/api/tmdb` route. The GitHub repository is connected to Cloudflare Builds; pushes to `main` publish production updates.
+
+- Build: `npm run build:vinext`
+- Deploy: `npx wrangler deploy --config dist/server/wrangler.json`
+- Preview: `npx wrangler versions upload --config dist/server/wrangler.json`
+- Local Cloudflare preview: `npm run build:vinext` then `npm run start:vinext`
+
+Set `TMDB_API_KEY` or `TMDB_ACCESS_TOKEN` as a Cloudflare Worker secret. Keep credentials out of Git and client bundles. Add the Cloudflare origin to Supabase's authentication redirect allowlist. The original Next.js development and build commands remain available.
 
 ## Profile photos
 
