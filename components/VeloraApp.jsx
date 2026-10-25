@@ -727,10 +727,10 @@ export default function VeloraApp({ initialPage = "discover" }) {
     <>
       <div className="app">
         <aside>
-          <div className="logo">
+          <a className="logo" href="/" aria-label={w("Velora — Home", "Velora — მთავარი გვერდი")} style={{ color: "inherit", textDecoration: "none" }}>
             <i />
             Velora
-          </div>
+          </a>
           <div className="mobile-tools">
             <button
               type="button"
