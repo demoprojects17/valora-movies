@@ -1,9 +1,13 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { getAvatarCrop } from "../lib/avatar";
+import { getAvatarCrop, getCoverCrop } from "../lib/avatar";
 const SIZE = 280;
-export default function AvatarCropper({ file, lang, onSave, onClose }) {
+export default function AvatarCropper({ file, lang, onSave, onClose, coverAspect = null }) {
   const w = (en, ka) => (lang === "ka" ? ka : en);
+  const stage = useRef(null);
+  const [stageWidth, setStageWidth] = useState(560);
+  const viewportWidth = coverAspect ? stageWidth : SIZE;
+  const viewportHeight = coverAspect ? stageWidth / coverAspect : SIZE;
   const dialog = useRef(null),
     pointer = useRef(null);
   const [url, setUrl] = useState(""),
@@ -18,15 +22,21 @@ export default function AvatarCropper({ file, lang, onSave, onClose }) {
     dialog.current.showModal();
     return () => URL.revokeObjectURL(source);
   }, [file]);
+  useEffect(() => {
+    if (!coverAspect || !stage.current) return;
+    const observer = new ResizeObserver(([entry]) => setStageWidth(entry.contentRect.width));
+    observer.observe(stage.current);
+    return () => observer.disconnect();
+  }, [coverAspect]);
   const scale = dimensions
-    ? (SIZE / Math.min(dimensions.width, dimensions.height)) * zoom
+    ? Math.max(viewportWidth / dimensions.width, viewportHeight / dimensions.height) * zoom
     : 1;
   function move(x, y, nextZoom = zoom) {
     if (!dimensions) return;
     const nextScale =
-      (SIZE / Math.min(dimensions.width, dimensions.height)) * nextZoom;
-    const limitX = (dimensions.width * nextScale - SIZE) / 2,
-      limitY = (dimensions.height * nextScale - SIZE) / 2;
+      Math.max(viewportWidth / dimensions.width, viewportHeight / dimensions.height) * nextZoom;
+    const limitX = (dimensions.width * nextScale - viewportWidth) / 2,
+      limitY = (dimensions.height * nextScale - viewportHeight) / 2;
     setOffset({
       x: Math.max(-limitX, Math.min(limitX, x)),
       y: Math.max(-limitY, Math.min(limitY, y)),
@@ -35,14 +45,14 @@ export default function AvatarCropper({ file, lang, onSave, onClose }) {
   return (
     <dialog
       ref={dialog}
-      className="avatar-crop-dialog"
+      className={`avatar-crop-dialog ${coverAspect ? "cover-crop-dialog" : ""}`}
       aria-labelledby="avatarCropTitle"
       onCancel={(e) => {
         if (busy) e.preventDefault();
         else onClose();
       }}
     >
-      <h2 id="avatarCropTitle">{w("Crop your photo", "ფოტოს მოჭრა")}</h2>
+      <h2 id="avatarCropTitle">{coverAspect ? w("Position your cover photo", "ბანერის ფოტოს მორგება") : w("Crop your photo", "ფოტოს მოჭრა")}</h2>
       <p>
         {w(
           "Drag the photo and adjust the zoom.",
@@ -50,7 +60,9 @@ export default function AvatarCropper({ file, lang, onSave, onClose }) {
         )}
       </p>
       <div
+        ref={stage}
         className="avatar-crop-stage"
+        style={coverAspect ? { width: "100%", height: "auto", aspectRatio: String(coverAspect) } : undefined}
         tabIndex={0}
         aria-label={w(
           "Move photo with arrow keys or drag",
@@ -147,7 +159,7 @@ export default function AvatarCropper({ file, lang, onSave, onClose }) {
             setBusy(true);
             setError("");
             try {
-              const crop = getAvatarCrop(
+              const crop = coverAspect ? getCoverCrop(dimensions.width, dimensions.height, zoom, offset.x, offset.y, viewportWidth, viewportHeight) : getAvatarCrop(
                 dimensions.width,
                 dimensions.height,
                 zoom,

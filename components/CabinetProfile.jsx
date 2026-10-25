@@ -44,6 +44,8 @@ export default function CabinetProfile({
   const [photoBusy, setPhotoBusy] = useState(false);
   const [photoError, setPhotoError] = useState("");
   const [cropFile, setCropFile] = useState(null);
+  const [coverCrop, setCoverCrop] = useState(null);
+  useEffect(() => setCoverCrop(null), [user?.id]);
   useEffect(() => setCropFile(null), [user?.id]);
   useEffect(() => {
     if (edit && editDialog.current) {
@@ -160,7 +162,7 @@ export default function CabinetProfile({
       </div>
       {showSettings && <><p className="c-hero-intro">{w("Good stories stay with you. Keep them all in one place.", "კარგი ისტორიები გრჩება. შეინახე ყველა მათგანი ერთ სივრცეში.")}</p><button className="c-edit" onClick={() => { if (!user) return onSignIn(); setDraft(name); setError(""); setEdit(true); }}><Icon name="settings" size={15}/>{w("Edit profile", "პროფილის რედაქტირება")}</button><span className="c-member-since">VELORA · {user?.created_at ? new Date(user.created_at).getFullYear() : w("LOCAL COLLECTION", "ადგილობრივი კოლექცია")}</span></>}
       </div>{showSettings && <div className="c-hero-art" aria-hidden="true">{["resident-evil.jpg", "animals.jpg", "sasaki.jpg"].map((poster, index) => <div key={poster} className={`c-poster c-poster-${["one","two","three"][index]}`}><img src={`/assets/releases/${poster}`} alt=""/></div>)}</div>}</div>
-      <input ref={coverInput} type="file" hidden accept="image/jpeg,image/png,image/webp,image/gif,image/bmp,image/avif,image/heic,image/heif,.heic,.heif" aria-label={w("Cover photo", "ბანერის ფოტო")} onChange={async (event) => { const file = event.target.files?.[0]; event.target.value = ""; if (!file) return; setPhotoError(""); setCoverBusy(true); try { await uploadCover(await normalizeAvatar(file)); } catch (error) { setPhotoError(error.message); } finally { setCoverBusy(false); } }}/>
+      <input ref={coverInput} type="file" hidden accept="image/jpeg,image/png,image/webp,image/gif,image/bmp,image/avif,image/heic,image/heif,.heic,.heif" aria-label={w("Cover photo", "ბანერის ფოტო")} onChange={async (event) => { const file = event.target.files?.[0]; event.target.value = ""; if (!file) return; setPhotoError(""); setCoverBusy(true); try { const banner = document.querySelector("#profileDlg .p-cover"); setCoverCrop({ file: await normalizeAvatar(file), aspect: banner ? banner.clientWidth / banner.clientHeight : 6 }); } catch (error) { setPhotoError(error.message); } finally { setCoverBusy(false); } }}/>
       {photoError && (
         <p className="avatar-error" role="alert">
           {photoError}
@@ -394,6 +396,7 @@ export default function CabinetProfile({
           </div>
         </>
       )}
+      {coverCrop && <AvatarCropper file={coverCrop.file} coverAspect={coverCrop.aspect} lang={lang} onClose={() => setCoverCrop(null)} onSave={async (file, crop) => { setCoverBusy(true); try { return await uploadCover(file, crop); } finally { setCoverBusy(false); } }}/>}
       {cropFile && (
         <AvatarCropper
           file={cropFile}

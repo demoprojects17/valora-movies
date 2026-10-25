@@ -129,3 +129,13 @@ test("cover export preserves wide aspect ratio and fits the storage limit", asyn
     if (previousDocument === undefined) delete globalThis.document; else globalThis.document = previousDocument;
   }
 });
+
+test("cover crop keeps selected banner area in bounds when dragging and zooming", async () => {
+  const { getCoverCrop } = await import("../lib/avatar.js");
+  assert.deepEqual(getCoverCrop(4000, 2000, 1, 0, 0, 600, 100), { x: 0, y: (2000 - 100 / 0.15) / 2, width: 4000, height: 100 / 0.15 });
+  const crop = getCoverCrop(4000, 2000, 2, 99999, -99999, 600, 100);
+  assert.equal(crop.x, 0);
+  assert.equal(crop.y + crop.height, 2000);
+  assert.ok(Math.abs(crop.width / crop.height - 6) < 1e-10);
+  assert.throws(() => getCoverCrop(4000, 2000, 1, 0, 0, 0, 100));
+});
