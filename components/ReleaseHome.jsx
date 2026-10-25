@@ -312,7 +312,9 @@ export default function ReleaseHome({
             >
               <img
                 className="r-hero-image"
-                src={featured.poster}
+                src={featured.backdrop || featured.poster}
+                loading={index === 0 ? "eager" : "lazy"}
+                decoding="async"
                 alt=""
                 style={{ objectPosition: featured.position || "center" }}
               />
