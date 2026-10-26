@@ -45,6 +45,8 @@ export default function TitleDetails({
     };
   }, [item, retry]);
   const info = data || item;
+  const coverSource = item.backdrop || data?.backdrop || data?.poster || item.poster;
+  const coverImage = coverSource?.replace(/^(https:\/\/image\.tmdb\.org\/t\/p\/)[^/]+\//, "$1original/");
   const rating = info.tmdbRating;
   return (
     <dialog
@@ -66,10 +68,11 @@ export default function TitleDetails({
       }}
     >
       <div className="td-cover">
-        {(item.poster || data?.poster) && (
+        {coverImage && (
           <img
             className="td-cover-image"
-            src={item.poster || data?.poster}
+            src={coverImage}
+            onError={(event) => { if (item.poster && event.currentTarget.getAttribute("src") !== item.poster) event.currentTarget.src = item.poster; }}
             alt=""
           />
         )}
