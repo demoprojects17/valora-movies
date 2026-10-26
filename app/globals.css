@@ -1434,3 +1434,9 @@ dialog summary {
   display: block;
   transform: translateX(1px);
 }
+
+.card .poster .x{opacity:1;min-width:36px;min-height:36px;display:grid;place-items:center;font-size:23px;color:#fff;background:#16161bd9;border:1px solid #ffffff35;cursor:pointer}
+.card .poster .x:hover{background:#8c2832;border-color:#f3a0a8}
+.td-remove{width:100%;margin-top:18px;min-height:42px;border:1px solid #ba596266;color:#ef909a;background:#ba596212;border-radius:9px}
+.td-remove:hover{background:#ba596226}
+html[data-theme="bright"] .td-remove{color:#a12d3c}

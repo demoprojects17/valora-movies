@@ -133,7 +133,7 @@ function Card({
         <button
           className="x"
           title={words("Remove", "წაშლა")}
-          aria-label={`Remove ${i.title}`}
+          aria-label={`${words("Remove", "წაშლა")} ${i.title}`}
           onClick={(e) => {
             e.stopPropagation();
             if (confirm(`${words("Remove", "წაიშალოს")} "${i.title}"?`))
@@ -975,6 +975,7 @@ export default function VeloraApp({ initialPage = "discover" }) {
                   <ReleaseHome
                     onTrailer={playTrailer}
                     onPersonalChange={changePersonalDetails}
+                    onRemove={removeItem}
                     onCollection={() => openCabinet("library")}
                     onUpdate={(id, patch) => {
                       updateItem(id, patch);
@@ -1349,6 +1350,7 @@ export default function VeloraApp({ initialPage = "discover" }) {
             (entry) => keyOf(entry) === keyOf(detailItem),
           )}
           onPersonalChange={changePersonalDetails}
+          onRemove={removeItem}
           lang={lang}
           onClose={() => setDetailItem(null)}
           actions={

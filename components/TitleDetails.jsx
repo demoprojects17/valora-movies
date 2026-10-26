@@ -9,6 +9,7 @@ export default function TitleDetails({
   actions,
   personalItem,
   onPersonalChange,
+  onRemove,
 }) {
   const dialog = useRef(null);
   const [data, setData] = useState(null);
@@ -228,6 +229,7 @@ export default function TitleDetails({
                   "შეფასება და სტატუსი შენს კოლექციაში ინახება.",
                 )}
               </span>
+              {personalItem && onRemove && <button type="button" className="td-remove" onClick={() => { if (window.confirm(w(`Remove "${item.title}" from your collection?`, `წაიშალოს „${item.title}“ კოლექციიდან?`))) { onRemove(personalItem.id); onClose(); } }}>{w("Remove from collection", "კოლექციიდან წაშლა")}</button>}
             </section>
           )}
         </div>
